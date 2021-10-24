@@ -46,9 +46,9 @@ var (
 	MsgPong      = []byte("+PONG\r\n")
 )
 
-func NewMessage(m []byte) Message {
+func NewMessage(m []byte, length int) Message {
 	// TODO remove
-	log.Printf("[data]: %v\n************************", string(m))
+	log.Printf("[data](length:%d): %v\n************************", length, string(m))
 	return m
 }
 

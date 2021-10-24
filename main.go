@@ -40,15 +40,15 @@ func main() {
 				n, err := c.Read(buf)
 				CheckError(err)
 
-				handle(c, buf[:n])
+				handle(c, n, buf[:n])
 			}
 		}(tcpConn)
 
 	}
 }
 
-func handle(conn net.Conn, data []byte) {
-	msg := NewMessage(data)
+func handle(conn net.Conn, length int, data []byte) {
+	msg := NewMessage(data, length)
 
 	msgType, err := msg.CheckType()
 	CheckError(err)
