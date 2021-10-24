@@ -10,13 +10,13 @@ type Err struct {
 }
 
 const (
-	NotImplement  = -1
-	InCompleteStr = iota + 1
+	NotImplement      = -1
+	InCompleteMessage = iota
 )
 
 var errMessageMap = map[int]string{
-	NotImplement:  "Not Implement yet",
-	InCompleteStr: "incomplete string",
+	NotImplement:      "Not Implement yet",
+	InCompleteMessage: "incomplete message",
 }
 
 func (e Err) Error() string {
