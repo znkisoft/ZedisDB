@@ -56,9 +56,9 @@ func handle(conn net.Conn, length int, data []byte) {
 	CheckError(err)
 
 	switch msgType {
-	case RedisReplyString:
+	case ZedisReplyString:
 		conn.Write(MsgPong)
-	case RedisReplyArray:
+	case ZedisReplyArray:
 		conn.Write(MsgPong)
 	default:
 	}

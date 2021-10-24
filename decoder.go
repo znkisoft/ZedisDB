@@ -17,33 +17,33 @@ type Decoder interface {
 }
 type RESPDecode struct{}
 
-// redis errors
+// zedis errors
 const (
-	REDIS_ERR_IO = iota + 1
-	REDIS_ERR_OTHER
-	REDIS_ERR_EOF
-	REDIS_ERR_PROTOCOL
-	REDIS_ERR_OOM
-	REDIS_ERR_TIMEOUT
+	ZedisErrIo = iota + 1
+	ZedisErrOther
+	ZedisErrEof
+	ZedisErrProtocol
+	ZedisErrOom
+	ZedisErrTimeout
 )
 
-// redis reply type
+// zedis reply type
 const (
-	RedisReplyString = iota + 1
-	RedisReplyArray
-	RedisReplyInteger
-	RedisReplyNil
-	RedisReplyStatus
-	RedisReplyError
-	RedisReplyDouble
-	RedisReplyBool
-	RedisReplyMap
-	RedisReplySet
-	RedisReplyAttr
-	RedisReplyPush
-	RedisReplyBignum
-	RedisReplyVerb
-	RedisReplyBulkString // Bulk Strings are used in order to represent a single binary safe string up to 512 MB in length.
+	ZedisReplyString = iota + 1
+	ZedisReplyArray
+	ZedisReplyInteger
+	ZedisReplyNil
+	ZedisReplyStatus
+	ZedisReplyError
+	ZedisReplyDouble
+	ZedisReplyBool
+	ZedisReplyMap
+	ZedisReplySet
+	ZedisReplyAttr
+	ZedisReplyPush
+	ZedisReplyBignum
+	ZedisReplyVerb
+	ZedisReplyBulkString // Bulk Strings are used in order to represent a single binary safe string up to 512 MB in length.
 )
 
 var (
@@ -70,15 +70,15 @@ CheckType
 */
 func (d RESPDecode) CheckType(m Message) (uint8, error) {
 	if bytes.HasPrefix(m, []byte{'+'}) {
-		return RedisReplyString, nil
+		return ZedisReplyString, nil
 	} else if bytes.HasPrefix(m, []byte{'-'}) {
-		return RedisReplyError, nil
+		return ZedisReplyError, nil
 	} else if bytes.HasPrefix(m, []byte{':'}) {
-		return RedisReplyInteger, nil
+		return ZedisReplyInteger, nil
 	} else if bytes.HasPrefix(m, []byte{'$'}) {
-		return RedisReplyBulkString, nil
+		return ZedisReplyBulkString, nil
 	} else if bytes.HasPrefix(m, []byte{'*'}) {
-		return RedisReplyArray, nil
+		return ZedisReplyArray, nil
 	}
 	return 0, errors.New("message's prefix is not supported")
 }
