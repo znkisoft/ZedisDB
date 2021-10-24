@@ -37,6 +37,7 @@ func main() {
 			defer c.Close()
 			buf := make([]byte, 1<<10) // 1KB
 			for {
+				// there’s no guarantee that all these bytes will arrive at the same time
 				n, err := c.Read(buf)
 				CheckError(err)
 
@@ -48,9 +49,10 @@ func main() {
 }
 
 func handle(conn net.Conn, length int, data []byte) {
+	var decoder Decoder
 	msg := NewMessage(data, length)
 
-	msgType, err := msg.CheckType()
+	msgType, err := decoder.CheckType(msg)
 	CheckError(err)
 
 	switch msgType {

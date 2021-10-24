@@ -6,11 +6,15 @@ import (
 	"log"
 )
 
-type Messager interface {
-	String() string
-}
-
 type Message []byte
+
+type Decoder interface {
+	DecodeSimpleString(message Message) (string, error)
+	DecodeBulkString(message Message) ([]string, error)
+	DecodeArray(message Message) ([]string, error)
+	CheckType(message Message) (uint8, error)
+}
+type RESPDecode struct{}
 
 // redis errors
 const (
@@ -52,17 +56,6 @@ func NewMessage(m []byte, length int) Message {
 	return m
 }
 
-func (m Message) String() string {
-	return string(m)
-}
-
-func (m Message) BulkStringParse() [][]byte {
-	if len(m) == 0 {
-		return [][]byte{}
-	}
-	return nil
-}
-
 /*
 CheckType
 	For Simple Strings the first byte of the reply is "+"
@@ -71,7 +64,7 @@ CheckType
 	For Bulk Strings the first byte of the reply is "$"
 	For Arrays the first byte of the reply is "*"
 */
-func (m Message) CheckType() (uint8, error) {
+func (d RESPDecode) CheckType(m Message) (uint8, error) {
 	if bytes.HasPrefix(m, []byte{'+'}) {
 		return RedisReplyString, nil
 	} else if bytes.HasPrefix(m, []byte{'-'}) {
@@ -84,4 +77,16 @@ func (m Message) CheckType() (uint8, error) {
 		return RedisReplyArray, nil
 	}
 	return 0, errors.New("message's prefix is not supported")
+}
+
+func (d *RESPDecode) DecodeSimpleString(msg Message) (string, error) {
+	return "", Err{code: InCompleteStr}
+}
+
+func (d *RESPDecode) DecodeBulkString(msg Message) ([]string, error) {
+	return []string{}, Err{code: NotImplement}
+}
+
+func (d *RESPDecode) DecodeArray(msg Message) ([]string, error) {
+	return []string{}, Err{code: NotImplement}
 }
