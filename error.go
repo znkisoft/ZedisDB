@@ -20,7 +20,7 @@ var errMessageMap = map[int]string{
 }
 
 func (e Err) Error() string {
-	return fmt.Sprintf("error [%d]: %s", e.code, getMsg(e.code))
+	return fmt.Sprintf("error[%d]: %s", e.code, getMsg(e.code))
 }
 
 func getMsg(code int) string {

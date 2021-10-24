@@ -11,7 +11,7 @@ type Message []byte
 type Decoder interface {
 	DecodeSimpleString(message Message) (string, error)
 	DecodeBulkString(message Message) ([]string, error)
-	DecodeArray(message Message) ([]string, error)
+	DecodeArray(message Message) (string, error)
 	CheckType(message Message) (uint8, error)
 }
 type RESPDecode struct{}
@@ -42,12 +42,15 @@ const (
 	RedisReplyPush
 	RedisReplyBignum
 	RedisReplyVerb
+	RedisReplyBulkString // Bulk Strings are used in order to represent a single binary safe string up to 512 MB in length.
 )
 
 var (
 	MsgConnected = []byte("*1\r\n$7\r\nCOMMAND\r\n")
 	MsgPing      = []byte("*1\r\n$4\r\nCOMMAND\r\n")
 	MsgPong      = []byte("+PONG\r\n")
+
+	delimiter = []byte("\r\n")
 )
 
 func NewMessage(m []byte, length int) Message {
@@ -72,7 +75,7 @@ func (d RESPDecode) CheckType(m Message) (uint8, error) {
 	} else if bytes.HasPrefix(m, []byte{':'}) {
 		return RedisReplyInteger, nil
 	} else if bytes.HasPrefix(m, []byte{'$'}) {
-		return RedisReplyArray, nil
+		return RedisReplyBulkString, nil
 	} else if bytes.HasPrefix(m, []byte{'*'}) {
 		return RedisReplyArray, nil
 	}
@@ -80,11 +83,49 @@ func (d RESPDecode) CheckType(m Message) (uint8, error) {
 }
 
 func (d *RESPDecode) DecodeSimpleString(msg Message) (string, error) {
-	return "", Err{code: InCompleteStr}
+	length := len(msg)
+
+	if length < 3 {
+		return "", Err{code: InCompleteStr}
+	}
+
+	if bytes.Equal(msg[length-2:length], delimiter) {
+		return string(msg[1 : length-2]), nil
+	}
+	return "", Err{code: NotImplement}
 }
 
-func (d *RESPDecode) DecodeBulkString(msg Message) ([]string, error) {
-	return []string{}, Err{code: NotImplement}
+func (d *RESPDecode) DecodeBulkString(msg Message) (string, error) {
+	length := len(msg)
+
+	// minimum length: "$-1\r\n"
+	if length < 4 {
+		return "", Err{code: InCompleteStr}
+	}
+
+	if bytes.Equal(msg[length-2:length], delimiter) {
+		// byte num to int with explicit cast
+		count := int(msg[1] - '0')
+
+		// "$-1\r\n"
+		if count == '-' {
+			// TODO implement Null Bulk String
+			return "", Err{code: InCompleteStr}
+		}
+
+		// "$0\r\n\r\n"
+		if count == 0 {
+			return "", nil
+		}
+
+		byteCollection := bytes.Split(msg, delimiter)
+		if len(byteCollection) == 3 {
+			return string(byteCollection[1]), nil
+		}
+
+		return "", Err{code: InCompleteStr}
+	}
+	return "", Err{code: InCompleteStr}
 }
 
 func (d *RESPDecode) DecodeArray(msg Message) ([]string, error) {

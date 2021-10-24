@@ -4,5 +4,5 @@
 
 ## features
 
-- [ ] compatible with `RESP` (you can use `redis-cli` to connect the database) 
+- [ ] compatible with `RESP` (REdis Serialization Protocol), you can use `redis-cli` to connect the database.
 - [ ] 
