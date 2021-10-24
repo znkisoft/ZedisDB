@@ -34,11 +34,14 @@ func main() {
 		// CheckError(err)
 
 		go func(c net.Conn) {
+			defer c.Close()
 			buf := make([]byte, 1<<10) // 1KB
-			_, err := c.Read(buf)
-			CheckError(err)
+			for {
+				n, err := c.Read(buf)
+				CheckError(err)
 
-			handle(c, buf)
+				handle(c, buf[:n])
+			}
 		}(tcpConn)
 
 	}
@@ -46,14 +49,15 @@ func main() {
 
 func handle(conn net.Conn, data []byte) {
 	msg := NewMessage(data)
+
 	msgType, err := msg.CheckType()
 	CheckError(err)
+
 	switch msgType {
 	case RedisReplyString:
 		conn.Write(MsgPong)
 	case RedisReplyArray:
 		conn.Write(MsgPong)
 	default:
-		conn.Close()
 	}
 }
