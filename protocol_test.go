@@ -15,7 +15,13 @@ func TestRESPDecode_DecodeArray(t *testing.T) {
 		want    []string
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{"case 1", args{msg: []byte("*1\r\n$4\r\nPING\r\n")}, []string{"PING"}, false},
+		{"case 2", args{msg: []byte("*2\r\n$4\r\nECHO\r\n$3\r\nhey\r\n")}, []string{"ECHO", "hey"}, false},
+		{"case 3", args{msg: []byte("*")}, nil, true},
+		{"case 3", args{msg: []byte("*1")}, nil, true},
+		{"case 3", args{msg: []byte("*1\r\n")}, nil, true},
+		{"case 3", args{msg: []byte("*1\r\n$4")}, nil, true},
+		{"case 3", args{msg: []byte("*2\r\n$4\r\nECHO\r\n")}, nil, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

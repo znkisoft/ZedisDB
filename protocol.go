@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"log"
+	"strconv"
 )
 
 type Message []byte
@@ -86,7 +87,7 @@ func (d *RESPDecode) DecodeSimpleString(msg Message) (string, error) {
 	length := len(msg)
 
 	if length < 3 {
-		return "", Err{code: InCompleteStr}
+		return "", Err{code: InCompleteMessage}
 	}
 
 	if bytes.Equal(msg[length-2:length], delimiter) {
@@ -100,7 +101,7 @@ func (d *RESPDecode) DecodeBulkString(msg Message) (string, error) {
 
 	// minimum length: "$-1\r\n"
 	if length < 4 {
-		return "", Err{code: InCompleteStr}
+		return "", Err{code: InCompleteMessage}
 	}
 
 	if bytes.Equal(msg[length-2:length], delimiter) {
@@ -110,7 +111,7 @@ func (d *RESPDecode) DecodeBulkString(msg Message) (string, error) {
 		// "$-1\r\n"
 		if count == '-' {
 			// TODO implement Null Bulk String
-			return "", Err{code: InCompleteStr}
+			return "", Err{code: InCompleteMessage}
 		}
 
 		// "$0\r\n\r\n"
@@ -118,16 +119,43 @@ func (d *RESPDecode) DecodeBulkString(msg Message) (string, error) {
 			return "", nil
 		}
 
-		byteCollection := bytes.Split(msg, delimiter)
-		if len(byteCollection) == 3 {
-			return string(byteCollection[1]), nil
+		array := bytes.Split(msg, delimiter)
+		if len(array) == 3 {
+			return string(array[1]), nil
 		}
 
-		return "", Err{code: InCompleteStr}
+		return "", Err{code: InCompleteMessage}
 	}
-	return "", Err{code: InCompleteStr}
+	return "", Err{code: InCompleteMessage}
 }
 
 func (d *RESPDecode) DecodeArray(msg Message) ([]string, error) {
-	return []string{}, Err{code: NotImplement}
+	length := len(msg)
+	var strArray []string
+
+	if length < 9 {
+		return nil, Err{code: InCompleteMessage}
+	}
+
+	if bytes.Equal(msg[length-2:], delimiter) {
+		array := bytes.Split(msg[0:length-2], delimiter)
+		if len(array) < 3 {
+			return nil, Err{code: InCompleteMessage}
+		}
+
+		count, _ := strconv.Atoi(string(array[0][1:]))
+		filtered := func(s []byte) bool { return !bytes.HasPrefix(s, []byte("$")) }
+		for _, byteArray := range array[1:] {
+			if filtered(byteArray) {
+				strArray = append(strArray, string(byteArray))
+			}
+		}
+
+		if count != len(strArray) {
+			return nil, Err{code: InCompleteMessage}
+		}
+		return strArray, nil
+
+	}
+	return nil, Err{code: InCompleteMessage}
 }
