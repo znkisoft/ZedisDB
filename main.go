@@ -21,24 +21,39 @@ func main() {
 	CheckError(err)
 	defer listener.Close()
 
-	log.Printf("[running] bound to %q", listener.Addr())
+	log.Printf("[connected] bound to %q", listener.Addr())
 
 	for {
 		tcpConn, err := listener.AcceptTCP()
 		CheckError(err)
+
+		// err = tcpConn.SetKeepAlive(true)
+		// CheckError(err)
+
+		// err = tcpConn.SetKeepAlivePeriod(time.Minute)
+		// CheckError(err)
+
 		go func(c net.Conn) {
-			buf := make([]byte, 100)
-			length, err := c.Read(buf)
+			buf := make([]byte, 1<<10) // 1KB
+			_, err := c.Read(buf)
 			CheckError(err)
 
-			handle(c, length, buf)
+			handle(c, buf)
 		}(tcpConn)
 
 	}
 }
 
-func handle(conn net.Conn, length int, msg []byte) {
-	fmt.Printf("Received data: %v, length: %d\n", string(msg[:length]), length)
-	// conn.Write([]byte("+PONG\n"))
-	conn.Close()
+func handle(conn net.Conn, data []byte) {
+	msg := NewMessage(data)
+	msgType, err := msg.CheckType()
+	CheckError(err)
+	switch msgType {
+	case RedisReplyString:
+		conn.Write(MsgPong)
+	case RedisReplyArray:
+		conn.Write(MsgPong)
+	default:
+		conn.Close()
+	}
 }
