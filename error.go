@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 )
 
@@ -14,10 +15,13 @@ const (
 	InCompleteMessage = iota
 )
 
-var errMessageMap = map[int]string{
-	NotImplement:      "Not Implement yet",
-	InCompleteMessage: "incomplete message",
-}
+var (
+	errMessageMap = map[int]string{
+		NotImplement:      "Not Implement yet",
+		InCompleteMessage: "incomplete message",
+	}
+	UnknownCommandsErr = errors.New("command unknown")
+)
 
 func (e Err) Error() string {
 	return fmt.Sprintf("error[%d]: %s", e.code, getMsg(e.code))

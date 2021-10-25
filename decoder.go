@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"errors"
 	"log"
 	"strconv"
 )
@@ -11,11 +10,15 @@ type Message []byte
 
 type Decoder interface {
 	DecodeSimpleString(message Message) (string, error)
-	DecodeBulkString(message Message) ([]string, error)
-	DecodeArray(message Message) (string, error)
+	DecodeBulkString(message Message) (string, error)
+	DecodeArray(message Message) ([]string, error)
 	CheckType(message Message) (uint8, error)
 }
 type RESPDecode struct{}
+
+type SimpleString string
+type BulkString string
+type Array []string
 
 // zedis errors
 const (
@@ -44,6 +47,7 @@ const (
 	ZedisReplyBignum
 	ZedisReplyVerb
 	ZedisReplyBulkString // Bulk Strings are used in order to represent a single binary safe string up to 512 MB in length.
+	ZedisReplyUnknown
 )
 
 var (
@@ -68,19 +72,20 @@ CheckType
 	For Bulk Strings the first byte of the reply is "$"
 	For Arrays the first byte of the reply is "*"
 */
-func (d RESPDecode) CheckType(m Message) (uint8, error) {
+func (d RESPDecode) CheckType(m Message) uint8 {
 	if bytes.HasPrefix(m, []byte{'+'}) {
-		return ZedisReplyString, nil
+		return ZedisReplyString
 	} else if bytes.HasPrefix(m, []byte{'-'}) {
-		return ZedisReplyError, nil
+		return ZedisReplyError
 	} else if bytes.HasPrefix(m, []byte{':'}) {
-		return ZedisReplyInteger, nil
+		return ZedisReplyInteger
 	} else if bytes.HasPrefix(m, []byte{'$'}) {
-		return ZedisReplyBulkString, nil
+		return ZedisReplyBulkString
 	} else if bytes.HasPrefix(m, []byte{'*'}) {
-		return ZedisReplyArray, nil
+		return ZedisReplyArray
+	} else {
+		return ZedisReplyUnknown
 	}
-	return 0, errors.New("message's prefix is not supported")
 }
 
 func (d *RESPDecode) DecodeSimpleString(msg Message) (string, error) {

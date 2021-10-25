@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"time"
 )
 
 func main() {
@@ -21,7 +22,7 @@ func main() {
 	CheckError(err)
 	defer listener.Close()
 
-	log.Printf("[connected] bound to %q", listener.Addr())
+	log.Printf("[connected] ZedisDB is bounding to %q", listener.Addr())
 
 	for {
 		tcpConn, err := listener.AcceptTCP()
@@ -30,8 +31,8 @@ func main() {
 		// err = tcpConn.SetKeepAlive(true)
 		// CheckError(err)
 
-		// err = tcpConn.SetKeepAlivePeriod(time.Minute)
-		// CheckError(err)
+		err = tcpConn.SetKeepAlivePeriod(time.Minute)
+		CheckError(err)
 
 		go func(c net.Conn) {
 			defer c.Close()
@@ -49,17 +50,25 @@ func main() {
 }
 
 func handle(conn net.Conn, length int, data []byte) {
-	var decoder Decoder
+	var (
+		decoder  RESPDecode
+		command  Command
+		response []byte
+	)
 	msg := NewMessage(data, length)
-
-	msgType, err := decoder.CheckType(msg)
-	CheckError(err)
+	msgType := decoder.CheckType(msg)
 
 	switch msgType {
 	case ZedisReplyString:
-		conn.Write(MsgPong)
+		str, _ := decoder.DecodeSimpleString(msg)
+		response = command.HandleCommand(str, nil)
+		conn.Write(response)
 	case ZedisReplyArray:
-		conn.Write(MsgPong)
+		str, _ := decoder.DecodeArray(msg)
+		response = command.HandleCommand(str[0], str[1:])
+		conn.Write(response)
+	case ZedisReplyUnknown:
+		conn.Write([]byte("*1unknown\r\ncommand\r\n"))
 	default:
 	}
 }
