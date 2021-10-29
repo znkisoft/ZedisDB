@@ -1,6 +1,8 @@
 package main
 
-import "sync"
+import (
+	"sync"
+)
 
 type KV struct {
 	mu   sync.Mutex
@@ -25,5 +27,11 @@ func (kv *KV) Get(key string) (interface{}, bool) {
 func (kv *KV) Set(key string, value interface{}) {
 	kv.mu.Lock()
 	kv.data[key] = value
+	defer kv.mu.Unlock()
+}
+
+func (kv *KV) Delete(key string) {
+	kv.mu.Lock()
+	delete(kv.data, key)
 	defer kv.mu.Unlock()
 }
