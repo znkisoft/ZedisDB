@@ -17,10 +17,10 @@ const (
 
 var (
 	errMessageMap = map[int]string{
-		NotImplement:      "Not Implement yet",
+		NotImplement:      "not implement yet",
 		InCompleteMessage: "incomplete message",
 	}
-	UnknownCommandsErr = errors.New("command unknown")
+	ErrUnknownCommand = errors.New("err command unknown")
 )
 
 func (e Err) Error() string {
