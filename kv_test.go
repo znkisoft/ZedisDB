@@ -9,7 +9,7 @@ func TestKV(t *testing.T) {
 	kv := New()
 
 	t.Run("TestGetNull", func(t *testing.T) {
-		if v,_:=kv.Get("test") ; v!= nil {
+		if v, _ := kv.Get("test"); v != nil {
 			t.Error("Expected nil")
 		}
 	})
@@ -22,7 +22,7 @@ func TestKV(t *testing.T) {
 	})
 
 	t.Run("TestDelete", func(t *testing.T) {
-			kv.Set("key2", "value")
+		kv.Set("key2", "value")
 		if v, _ := kv.Get("key2"); v != "value" {
 			t.Errorf("Expected value: \"value\"")
 		}
@@ -30,9 +30,8 @@ func TestKV(t *testing.T) {
 		if v, _ := kv.Get("key"); v != nil {
 			t.Errorf("Expected value: nil")
 		}
-	  })
+	})
 }
-
 
 func BenchmarkKV(b *testing.B) {
 
