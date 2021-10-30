@@ -14,8 +14,8 @@ gotool:
 
 
 
-docs:
-	go run ./docs/api-list-gen.go
+doc:
+	go run ./docs/gen-api.go
 
 clean:
 	@if [ -f ${BINARY} ] ; then rm ${BINARY} ; fi

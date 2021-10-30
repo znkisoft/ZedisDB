@@ -8,6 +8,4 @@
 
 ## available RESP commands
 
-<details id="achor">
-    <summary>Available Commands</summary>
-</details>
+<!--#Anchor-->
