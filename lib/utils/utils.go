@@ -2,8 +2,9 @@ package utils
 
 import (
 	"errors"
-	"fmt"
 	"io"
+
+	"github.com/znkisoft/zedisDB/lib/logger"
 )
 
 func CheckError(err error) {
@@ -11,6 +12,6 @@ func CheckError(err error) {
 		if errors.Is(err, io.EOF) {
 			return
 		}
-		panic(fmt.Sprintf("[Error]: %s\n", err))
+		logger.ErrorLog.Fatal(err)
 	}
 }
