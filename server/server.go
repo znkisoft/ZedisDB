@@ -1,7 +1,11 @@
 package server
 
 import (
+	"bufio"
+	"io"
+	"log"
 	"net"
+	"os"
 
 	"github.com/znkisoft/zedisDB/lib/logger"
 	"github.com/znkisoft/zedisDB/lib/utils"
@@ -27,24 +31,28 @@ func ListenAndServe(addr string) {
 		// utils.CheckError(err)
 
 		// err = conn.SetKeepAlivePeriod(time.Minute)
-		// utils.CheckError(err)
-
-		go func(c net.Conn) {
-			defer c.Close()
-			buf := make([]byte, 1<<10) // 1KB
-			for {
-				n, err := c.Read(buf)
-				utils.CheckError(err)
-
-				handle(c, n, buf[:n])
-			}
-		}(conn)
-
+		// utils.CheckError
+		go handle(conn)
 	}
 }
 
-func handle(conn net.Conn, length int, data []byte) {
-	conn.Write([]byte("+pong\r\n"))
+func handle(conn net.Conn) {
+	reader := bufio.NewReader(conn)
+	for {
+		msg, err := reader.ReadString('\n')
+		if err != nil {
+			// close connection if end with io.EOF
+			if err == io.EOF {
+				log.Println("connection closed")
+				os.Exit(1)
+			} else {
+				log.Println(err)
+			}
+			return
+		}
 
-	defer conn.Close()
+		// TODO resolve comming request with payload
+		bytes := []byte(msg)
+		conn.Write(bytes)
+	}
 }
