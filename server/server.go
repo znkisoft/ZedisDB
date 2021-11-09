@@ -2,13 +2,14 @@ package server
 
 import (
 	"bufio"
-	"io"
-	"log"
-	"net"
-	"os"
-
 	"github.com/znkisoft/zedisDB/lib/logger"
 	"github.com/znkisoft/zedisDB/lib/utils"
+	"github.com/znkisoft/zedisDB/parser"
+	"io"
+	"os"
+	"time"
+
+	"net"
 )
 
 func ListenAndServe(addr string) {
@@ -17,42 +18,52 @@ func ListenAndServe(addr string) {
 	utils.CheckError(err)
 
 	// bind listener addr
-	listener, err := net.ListenTCP("tcp", tcpAddr)
+	l, err := net.ListenTCP("tcp", tcpAddr)
 	utils.CheckError(err)
-	defer listener.Close()
+	defer l.Close()
 
 	logger.CommonLog.Printf("(connected) ZedisDB is bounding to %s", addr)
 
 	for {
-		conn, err := listener.AcceptTCP()
+		conn, err := l.AcceptTCP()
 		utils.CheckError(err)
 
-		// err = tcpConn.SetKeepAlive(true)
-		// utils.CheckError(err)
+		// set timeout
+		conn.SetDeadline(time.Now().Add(time.Second * 30))
+		utils.CheckError(err)
 
 		// err = conn.SetKeepAlivePeriod(time.Minute)
 		// utils.CheckError
-		go handle(conn)
-	}
-}
 
-func handle(conn net.Conn) {
-	reader := bufio.NewReader(conn)
-	for {
-		msg, err := reader.ReadString('\n')
-		if err != nil {
-			// close connection if end with io.EOF
-			if err == io.EOF {
-				log.Println("connection closed")
-				os.Exit(1)
-			} else {
-				log.Println(err)
+		go func() {
+			reader, writer := bufio.NewReader(conn), bufio.NewWriter(conn)
+			for {
+
+				msg, err := reader.ReadString('\n')
+				if err != nil {
+					if _, ok := err.(*parser.ErrProtocol); ok {
+						writer.WriteString("-ERR" + err.Error() + "\r\n")
+						writer.Flush()
+
+						// close connection if end with io.EOF
+					} else if err == io.EOF {
+						logger.CommonLog.Println("connection closed")
+						os.Exit(1)
+					} else {
+						writer.WriteString("-ERR unknown error\r\n")
+						writer.Flush()
+					}
+					return
+				}
+				// debug
+				logger.CommonLog.Printf("(incoming message): %s", msg)
+
+				// TODO resolve coming request with payload
+				// conn.Write(bytes)
+				// writer.WriteString("+OK\r\n")
+				writer.WriteString(msg)
+				writer.Flush()
 			}
-			return
-		}
-
-		// TODO resolve comming request with payload
-		bytes := []byte(msg)
-		conn.Write(bytes)
+		}()
 	}
 }
