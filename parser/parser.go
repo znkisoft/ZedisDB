@@ -9,7 +9,7 @@ type ReplyType byte
 
 type Value struct {
 	typ     ReplyType
-	data    []Value
+	array   []Value
 	null    bool
 	str     []byte
 	integer int
@@ -53,6 +53,13 @@ func (v Value) String() string {
 	return ""
 }
 
+func StringValue(s string) Value {
+	return Value{typ: BulkString, str: []byte(s)}
+}
+func SimpleStringValue(s string) Value {
+	return Value{typ: SimpleString, str: []byte(formatOneLine(s))}
+}
+
 func (v Value) Integer() int {
 	switch v.typ {
 	case Integer:
@@ -62,6 +69,9 @@ func (v Value) Integer() int {
 		return n
 	}
 }
+func IntegerValue(n int) Value {
+	return Value{integer: n, typ: Integer}
+}
 
 func (v Value) Bytes() []byte {
 	switch v.typ {
@@ -70,6 +80,9 @@ func (v Value) Bytes() []byte {
 	default:
 		return []byte(v.String())
 	}
+}
+func BytesValue(b []byte) Value {
+	return Value{str: b, typ: BulkString}
 }
 
 func (v Value) Float() float64 {
@@ -81,9 +94,17 @@ func (v Value) Float() float64 {
 		return n
 	}
 }
+func FloatValue(f float64) Value {
+	// The special precision -1 uses the smallest number of
+	// digits necessary such that ParseFloat will return f exactly.
+	return StringValue(strconv.FormatFloat(f, 'f', -1, 64))
+}
 
 func (v Value) IsNull() bool {
 	return v.null
+}
+func NullValue() Value {
+	return Value{typ: BulkString, null: true}
 }
 
 func (v Value) Error() error {
@@ -92,4 +113,30 @@ func (v Value) Error() error {
 		return errors.New(string(v.str))
 	}
 	return nil
+}
+func ErrorValue(err error) Value {
+	return Value{typ: Err, str: []byte(err.Error())}
+}
+
+func (v Value) Array() []Value {
+	if v.typ == Array && v.null == false {
+		return v.array
+	}
+	return nil
+}
+
+func ArrayValue(vals []Value) Value {
+	return Value{
+		typ:   Array,
+		array: vals,
+	}
+}
+
+func (v Value) Type() ReplyType {
+	return v.typ
+}
+
+// TODO
+func formatOneLine(s string) string {
+	return s
 }
