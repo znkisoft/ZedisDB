@@ -6,6 +6,8 @@ import (
 	"log"
 	"net"
 	"time"
+
+	"github.com/znkisoft/zedisDB/lib/utils"
 )
 
 func main() {
@@ -16,23 +18,23 @@ func main() {
 	flag.Parse()
 
 	addr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("127.0.0.1:%s", port))
-	CheckError(err)
+	utils.CheckError(err)
 
 	listener, err := net.ListenTCP("tcp", addr)
-	CheckError(err)
+	utils.CheckError(err)
 	defer listener.Close()
 
 	log.Printf("[connected] ZedisDB is bounding to %q", listener.Addr())
 
 	for {
 		tcpConn, err := listener.AcceptTCP()
-		CheckError(err)
+		utils.CheckError(err)
 
 		// err = tcpConn.SetKeepAlive(true)
-		// CheckError(err)
+		// utils.CheckError(err)
 
 		err = tcpConn.SetKeepAlivePeriod(time.Minute)
-		CheckError(err)
+		utils.CheckError(err)
 
 		go func(c net.Conn) {
 			defer c.Close()
@@ -40,7 +42,7 @@ func main() {
 			for {
 				// there’s no guarantee that all these bytes will arrive at the same time
 				n, err := c.Read(buf)
-				CheckError(err)
+				utils.CheckError(err)
 
 				handle(c, n, buf[:n])
 			}
