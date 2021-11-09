@@ -38,7 +38,6 @@ func ListenAndServe(addr string) {
 		go func() {
 			reader, writer := bufio.NewReader(conn), bufio.NewWriter(conn)
 			for {
-
 				msg, err := reader.ReadString('\n')
 				if err != nil {
 					if _, ok := err.(*parser.ErrProtocol); ok {
@@ -60,8 +59,7 @@ func ListenAndServe(addr string) {
 
 				// TODO resolve coming request with payload
 				// conn.Write(bytes)
-				// writer.WriteString("+OK\r\n")
-				writer.WriteString(msg)
+				writer.WriteString("+PONG\r\n")
 				writer.Flush()
 			}
 		}()

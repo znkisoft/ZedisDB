@@ -3,9 +3,8 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"sync"
+	"testing"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -18,7 +17,7 @@ var (
 
 func init() {
 	rdb = redis.NewClient(&redis.Options{
-		Addr:         ":6379",
+		Addr:         ":7000",
 		DialTimeout:  10 * time.Second,
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 30 * time.Second,
@@ -27,167 +26,101 @@ func init() {
 	})
 }
 
-func ExampleNewClient() {
-	rdb := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379", // use default Addr
-		Password: "",               // no password set
-		DB:       0,                // use default DB
-	})
+func TestServerConnection(t *testing.T) {
+	ch := make(chan string, 10)
 
-	pong, err := rdb.Ping(ctx).Result()
-	fmt.Println(pong, err)
-	// Output: PONG <nil>
+	// open connections
+	for i := 0; i < 10; i++ {
+		go func() {
+			msg, err := rdb.Ping(ctx).Result()
+			if err != nil {
+				t.Errorf("can'not ping server: %s", err)
+			}
+			ch <- msg
+		}()
+	}
+
+	// loop over channel and check if the value equal "PONG"
+	for i := 0; i < 10; i++ {
+		if msg := <-ch; msg != "PONG" {
+			t.Errorf("expected message PONG, got %s", msg)
+		}
+	}
 }
 
-// func ExampleNewFailoverClient() {
-// 	// See http://redis.io/topics/sentinel for instructions how to
-// 	// setup Redis Sentinel.
-// 	rdb := redis.NewFailoverClient(&redis.FailoverOptions{
-// 		MasterName:    "master",
-// 		SentinelAddrs: []string{":26379"},
-// 	})
-// 	rdb.Ping(ctx)
-// }
-
-// func ExampleNewClusterClient() {
-// 	// See http://redis.io/topics/cluster-tutorial for instructions
-// 	// how to setup Redis Cluster.
-// 	rdb := redis.NewClusterClient(&redis.ClusterOptions{
-// 		Addrs: []string{":7000", ":7001", ":7002", ":7003", ":7004", ":7005"},
-// 	})
-// 	rdb.Ping(ctx)
-// }
-
-// // Following example creates a cluster from 2 master nodes and 2 slave nodes
-// // without using cluster mode or Redis Sentinel.
-// func ExampleNewClusterClient_manualSetup() {
-// 	// clusterSlots returns cluster slots information.
-// 	// It can use service like ZooKeeper to maintain configuration information
-// 	// and Cluster.ReloadState to manually trigger state reloading.
-// 	clusterSlots := func(ctx context.Context) ([]redis.ClusterSlot, error) {
-// 		slots := []redis.ClusterSlot{
-// 			// First node with 1 master and 1 slave.
-// 			{
-// 				Start: 0,
-// 				End:   8191,
-// 				Nodes: []redis.ClusterNode{{
-// 					Addr: ":7000", // master
-// 				}, {
-// 					Addr: ":8000", // 1st slave
-// 				}},
-// 			},
-// 			// Second node with 1 master and 1 slave.
-// 			{
-// 				Start: 8192,
-// 				End:   16383,
-// 				Nodes: []redis.ClusterNode{{
-// 					Addr: ":7001", // master
-// 				}, {
-// 					Addr: ":8001", // 1st slave
-// 				}},
-// 			},
-// 		}
-// 		return slots, nil
-// 	}
-
-// 	rdb := redis.NewClusterClient(&redis.ClusterOptions{
-// 		ClusterSlots:  clusterSlots,
-// 		RouteRandomly: true,
-// 	})
-// 	rdb.Ping(ctx)
-
-// 	// ReloadState reloads cluster state. It calls ClusterSlots func
-// 	// to get cluster slots information.
-// 	rdb.ReloadState(ctx)
-// }
-
-// func ExampleNewRing() {
-// 	rdb := redis.NewRing(&redis.RingOptions{
-// 		Addrs: map[string]string{
-// 			"shard1": ":7000",
-// 			"shard2": ":7001",
-// 			"shard3": ":7002",
-// 		},
-// 	})
-// 	rdb.Ping(ctx)
-// }
-
-func ExampleClient() {
+func TestGetAndSet(t *testing.T) {
+	// test SET
 	err := rdb.Set(ctx, "key", "value", 0).Err()
 	if err != nil {
-		panic(err)
+		t.Error(err)
 	}
 
+	// test GET
 	val, err := rdb.Get(ctx, "key").Result()
 	if err != nil {
-		panic(err)
+		t.Error(err)
 	}
-	fmt.Println("key", val)
+	if val != "value" {
+		t.Errorf("expect value is 'value', but got '%s'", val)
+	}
 
+	// test GET with missing key
 	val2, err := rdb.Get(ctx, "missing_key").Result()
 	if err == redis.Nil {
 		fmt.Println("missing_key does not exist")
 	} else if err != nil {
-		panic(err)
+		t.Error(err)
 	} else {
-		fmt.Println("missing_key", val2)
-	}
-	// Output: key value
-	// missing_key does not exist
-}
-
-func ExampleConn() {
-	conn := rdb.Conn(context.Background())
-
-	err := conn.ClientSetName(ctx, "foobar").Err()
-	if err != nil {
-		panic(err)
-	}
-
-	// Open other connections.
-	for i := 0; i < 10; i++ {
-		go rdb.Ping(ctx)
-	}
-
-	s, err := conn.ClientGetName(ctx).Result()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(s)
-	// Output: foobar
-}
-
-func ExampleClient_Set() {
-	// Last argument is expiration. Zero means the key has no
-	// expiration time.
-	err := rdb.Set(ctx, "key", "value", 0).Err()
-	if err != nil {
-		panic(err)
-	}
-
-	// key2 will expire in an hour.
-	err = rdb.Set(ctx, "key2", "value", time.Hour).Err()
-	if err != nil {
-		panic(err)
+		t.Errorf("expect nil, but got '%s'", val2)
 	}
 }
 
-func ExampleClient_SetEX() {
-	err := rdb.SetEX(ctx, "key", "value", time.Hour).Err()
+func TestSetWithExpirationKey(t *testing.T) {
+	// Last argument is expiration. Zero means the key has no expiration time.
+	err := rdb.Set(ctx, "key3", "value3", 0).Err()
 	if err != nil {
-		panic(err)
+		t.Error(err)
+	}
+
+	// key4 will expire in an hour.
+	err = rdb.Set(ctx, "key_expire", "value_expire_in_one_hour", time.Hour).Err()
+	if err != nil {
+		t.Error(err)
 	}
 }
 
-func ExampleClient_Incr() {
+func TestIncr(t *testing.T) {
+	// test incr
 	result, err := rdb.Incr(ctx, "counter").Result()
 	if err != nil {
-		panic(err)
+		t.Error(err)
 	}
 
-	fmt.Println(result)
-	// Output: 1
+	if result != 1 {
+		t.Errorf("expect result is 1, but got %d", result)
+	}
 }
+
+// func TestConn(t *testing.T) {
+// 	conn := rdb.Conn(context.Background())
+//
+// 	err := conn.ClientSetName(ctx, "foobar").Err()
+// 	if err != nil {
+// 		t.Error(err)
+// 	}
+//
+// 	// Open other connections.
+// 	for i := 0; i < 10; i++ {
+// 		go rdb.Ping(ctx)
+// 	}
+//
+// 	s, err := conn.ClientGetName(ctx).Result()
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	fmt.Println(s)
+// 	// Output: foobar
+// }
 
 // func ExampleClient_BLPop() {
 // 	if err := rdb.RPush(ctx, "queue", "message").Err(); err != nil {
@@ -385,171 +318,143 @@ func ExampleClient_Incr() {
 // 	// Output: 1 <nil>
 // }
 
-func ExampleClient_Watch() {
-	const maxRetries = 1000
-
-	// Increment transactionally increments key using GET and SET commands.
-	increment := func(key string) error {
-		// Transactional function.
-		txf := func(tx *redis.Tx) error {
-			// Get current value or zero.
-			n, err := tx.Get(ctx, key).Int()
-			if err != nil && err != redis.Nil {
-				return err
-			}
-
-			// Actual opperation (local in optimistic lock).
-			n++
-
-			// Operation is committed only if the watched keys remain unchanged.
-			_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
-				pipe.Set(ctx, key, n, 0)
-				return nil
-			})
-			return err
-		}
-
-		for i := 0; i < maxRetries; i++ {
-			err := rdb.Watch(ctx, txf, key)
-			if err == nil {
-				// Success.
-				return nil
-			}
-			if err == redis.TxFailedErr {
-				// Optimistic lock lost. Retry.
-				continue
-			}
-			// Return any other error.
-			return err
-		}
-
-		return errors.New("increment reached maximum number of retries")
-	}
-
-	var wg sync.WaitGroup
-	for i := 0; i < 100; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-
-			if err := increment("counter3"); err != nil {
-				fmt.Println("increment error:", err)
-			}
-		}()
-	}
-	wg.Wait()
-
-	n, err := rdb.Get(ctx, "counter3").Int()
-	fmt.Println("ended with", n, err)
-	// Output: ended with 100 <nil>
-}
-
-func ExamplePubSub() {
-	pubsub := rdb.Subscribe(ctx, "mychannel1")
-
-	// Wait for confirmation that subscription is created before publishing anything.
-	_, err := pubsub.Receive(ctx)
-	if err != nil {
-		panic(err)
-	}
-
-	// Go channel which receives messages.
-	ch := pubsub.Channel()
-
-	// Publish a message.
-	err = rdb.Publish(ctx, "mychannel1", "hello").Err()
-	if err != nil {
-		panic(err)
-	}
-
-	time.AfterFunc(time.Second, func() {
-		// When pubsub is closed channel is closed too.
-		_ = pubsub.Close()
-	})
-
-	// Consume messages.
-	for msg := range ch {
-		fmt.Println(msg.Channel, msg.Payload)
-	}
-
-	// Output: mychannel1 hello
-}
-
-func ExamplePubSub_Receive() {
-	pubsub := rdb.Subscribe(ctx, "mychannel2")
-	defer pubsub.Close()
-
-	for i := 0; i < 2; i++ {
-		// ReceiveTimeout is a low level API. Use ReceiveMessage instead.
-		msgi, err := pubsub.ReceiveTimeout(ctx, time.Second)
-		if err != nil {
-			break
-		}
-
-		switch msg := msgi.(type) {
-		case *redis.Subscription:
-			fmt.Println("subscribed to", msg.Channel)
-
-			_, err := rdb.Publish(ctx, "mychannel2", "hello").Result()
-			if err != nil {
-				panic(err)
-			}
-		case *redis.Message:
-			fmt.Println("received", msg.Payload, "from", msg.Channel)
-		default:
-			panic("unreached")
-		}
-	}
-
-	// sent message to 1 rdb
-	// received hello from mychannel2
-}
-
-func ExampleNewUniversalClient_simple() {
-	rdb := redis.NewUniversalClient(&redis.UniversalOptions{
-		Addrs: []string{":6379"},
-	})
-	defer rdb.Close()
-
-	rdb.Ping(ctx)
-}
-
-// func ExampleNewUniversalClient_failover() {
-// 	rdb := redis.NewUniversalClient(&redis.UniversalOptions{
-// 		MasterName: "master",
-// 		Addrs:      []string{":26379"},
+// func ExampleClient_Watch() {
+// 	const maxRetries = 1000
+//
+// 	// Increment transactionally increments key using GET and SET commands.
+// 	increment := func(key string) error {
+// 		// Transactional function.
+// 		txf := func(tx *redis.Tx) error {
+// 			// Get current value or zero.
+// 			n, err := tx.Get(ctx, key).Int()
+// 			if err != nil && err != redis.Nil {
+// 				return err
+// 			}
+//
+// 			// Actual opperation (local in optimistic lock).
+// 			n++
+//
+// 			// Operation is committed only if the watched keys remain unchanged.
+// 			_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+// 				pipe.Set(ctx, key, n, 0)
+// 				return nil
+// 			})
+// 			return err
+// 		}
+//
+// 		for i := 0; i < maxRetries; i++ {
+// 			err := rdb.Watch(ctx, txf, key)
+// 			if err == nil {
+// 				// Success.
+// 				return nil
+// 			}
+// 			if err == redis.TxFailedErr {
+// 				// Optimistic lock lost. Retry.
+// 				continue
+// 			}
+// 			// Return any other error.
+// 			return err
+// 		}
+//
+// 		return errors.New("increment reached maximum number of retries")
+// 	}
+//
+// 	var wg sync.WaitGroup
+// 	for i := 0; i < 100; i++ {
+// 		wg.Add(1)
+// 		go func() {
+// 			defer wg.Done()
+//
+// 			if err := increment("counter3"); err != nil {
+// 				fmt.Println("increment error:", err)
+// 			}
+// 		}()
+// 	}
+// 	wg.Wait()
+//
+// 	n, err := rdb.Get(ctx, "counter3").Int()
+// 	fmt.Println("ended with", n, err)
+// 	// Output: ended with 100 <nil>
+// }
+//
+// func ExamplePubSub() {
+// 	pubsub := rdb.Subscribe(ctx, "mychannel1")
+//
+// 	// Wait for confirmation that subscription is created before publishing anything.
+// 	_, err := pubsub.Receive(ctx)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+//
+// 	// Go channel which receives messages.
+// 	ch := pubsub.Channel()
+//
+// 	// Publish a message.
+// 	err = rdb.Publish(ctx, "mychannel1", "hello").Err()
+// 	if err != nil {
+// 		panic(err)
+// 	}
+//
+// 	time.AfterFunc(time.Second, func() {
+// 		// When pubsub is closed channel is closed too.
+// 		_ = pubsub.Close()
 // 	})
-// 	defer rdb.Close()
-
-// 	rdb.Ping(ctx)
+//
+// 	// Consume messages.
+// 	for msg := range ch {
+// 		fmt.Println(msg.Channel, msg.Payload)
+// 	}
+//
+// 	// Output: mychannel1 hello
+// }
+//
+// func ExamplePubSub_Receive() {
+// 	pubsub := rdb.Subscribe(ctx, "mychannel2")
+// 	defer pubsub.Close()
+//
+// 	for i := 0; i < 2; i++ {
+// 		// ReceiveTimeout is a low level API. Use ReceiveMessage instead.
+// 		msgi, err := pubsub.ReceiveTimeout(ctx, time.Second)
+// 		if err != nil {
+// 			break
+// 		}
+//
+// 		switch msg := msgi.(type) {
+// 		case *redis.Subscription:
+// 			fmt.Println("subscribed to", msg.Channel)
+//
+// 			_, err := rdb.Publish(ctx, "mychannel2", "hello").Result()
+// 			if err != nil {
+// 				panic(err)
+// 			}
+// 		case *redis.Message:
+// 			fmt.Println("received", msg.Payload, "from", msg.Channel)
+// 		default:
+// 			panic("unreached")
+// 		}
+// 	}
+//
+// 	// sent message to 1 rdb
+// 	// received hello from mychannel2
 // }
 
-// func ExampleNewUniversalClient_cluster() {
-// 	rdb := redis.NewUniversalClient(&redis.UniversalOptions{
-// 		Addrs: []string{":7000", ":7001", ":7002", ":7003", ":7004", ":7005"},
-// 	})
-// 	defer rdb.Close()
-
-// 	rdb.Ping(ctx)
+// func ExampleClient_SlowLogGet() {
+// 	const key = "slowlog-log-slower-than"
+//
+// 	old := rdb.ConfigGet(ctx, key).Val()
+// 	rdb.ConfigSet(ctx, key, "0")
+// 	defer rdb.ConfigSet(ctx, key, old[1].(string))
+//
+// 	if err := rdb.Do(ctx, "slowlog", "reset").Err(); err != nil {
+// 		panic(err)
+// 	}
+//
+// 	rdb.Set(ctx, "test", "true", 0)
+//
+// 	result, err := rdb.SlowLogGet(ctx, -1).Result()
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	fmt.Println(len(result))
+// 	// Output: 2
 // }
-
-func ExampleClient_SlowLogGet() {
-	const key = "slowlog-log-slower-than"
-
-	old := rdb.ConfigGet(ctx, key).Val()
-	rdb.ConfigSet(ctx, key, "0")
-	defer rdb.ConfigSet(ctx, key, old[1].(string))
-
-	if err := rdb.Do(ctx, "slowlog", "reset").Err(); err != nil {
-		panic(err)
-	}
-
-	rdb.Set(ctx, "test", "true", 0)
-
-	result, err := rdb.SlowLogGet(ctx, -1).Result()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(len(result))
-	// Output: 2
-}
