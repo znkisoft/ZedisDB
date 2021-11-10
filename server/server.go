@@ -33,32 +33,17 @@ func ListenAndServe(addr string) {
 		// err = conn.SetKeepAlivePeriod(time.Minute)
 		// utils.CheckError
 
+		// debug
 		// go func() {
-		// 	reader, writer := bufio.NewReader(conn), bufio.NewWriter(conn)
+		// 	reader := bufio.NewReader(conn)
 		// 	for {
 		// 		msg, err := reader.ReadString('\n')
 		// 		if err != nil {
-		// 			if _, ok := err.(*parser.ErrProtocol); ok {
-		// 				writer.WriteString("-ERR" + err.Error() + "\r\n")
-		// 				writer.Flush()
-		//
-		// 			} else if err == io.EOF {
-		// 				// close connection if end with io.EOF
-		// 				logger.CommonLog.Println("connection closed")
-		// 				os.Exit(1)
-		// 			} else {
-		// 				writer.WriteString("-ERR unknown error\r\n")
-		// 				writer.Flush()
-		// 			}
-		// 			return
+		// 			logger.CommonLog.Println("connection closed")
+		// 			os.Exit(1)
 		// 		}
-		// 		// debug
 		// 		logger.CommonLog.Printf("(incoming message): %s", msg)
-		//
-		// 		// TODO resolve coming request with payload
-		// 		// conn.Write(bytes)
-		// 		writer.WriteString("+PONG\r\n")
-		// 		writer.Flush()
+		// 		conn.Write([]byte(msg))
 		// 	}
 		// }()
 
