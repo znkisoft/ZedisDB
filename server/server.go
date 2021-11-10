@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"github.com/znkisoft/zedisDB/lib/logger"
 	"github.com/znkisoft/zedisDB/lib/utils"
 	"log"
@@ -73,8 +72,8 @@ func handleConnection(c net.Conn) {
 		if err != nil {
 			log.Fatalln(err)
 		}
-		values := v.Array()
-		fmt.Printf("%+v\n", values)
+		_ = v.Array()
+		conn.Conn.Write([]byte("+OK\r\n"))
 	}
 
 }
