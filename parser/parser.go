@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"bytes"
 	"errors"
 	"strconv"
 )
@@ -143,7 +144,15 @@ func (v Value) Type() ReplyType {
 	return v.typ
 }
 
-// TODO
 func formatOneLine(s string) string {
-	return s
+	var buf bytes.Buffer
+	for _, c := range s {
+		switch c {
+		case '\r', '\n':
+			buf.WriteString("\\r\\n")
+		default:
+			buf.WriteRune(c)
+		}
+	}
+	return buf.String()
 }

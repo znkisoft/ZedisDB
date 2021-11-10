@@ -1,5 +1,13 @@
 package parser
 
+// const (
+// 	?Common = iota
+// 	Syntax
+// 	Protocol
+// 	Param
+// 	Server
+// )
+
 type ErrProtocol struct {
 	Message string
 }
