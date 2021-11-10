@@ -56,8 +56,13 @@ func (v Value) String() string {
 func StringValue(s string) Value {
 	return Value{typ: BulkString, str: []byte(s)}
 }
+
 func SimpleStringValue(s string) Value {
 	return Value{typ: SimpleString, str: []byte(formatOneLine(s))}
+}
+
+func EmptyStringValue() Value {
+	return Value{typ: BulkString, str: []byte("0\r\n")}
 }
 
 func (v Value) Integer() int {
@@ -103,6 +108,8 @@ func FloatValue(f float64) Value {
 func (v Value) IsNull() bool {
 	return v.null
 }
+
+// NullValue returns a null value, origin: "$-1\r\n"
 func NullValue() Value {
 	return Value{typ: BulkString, null: true}
 }
