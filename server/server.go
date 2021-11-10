@@ -4,6 +4,7 @@ import (
 	"github.com/znkisoft/zedisDB/lib/logger"
 	"github.com/znkisoft/zedisDB/lib/utils"
 	"log"
+	"strings"
 	"time"
 
 	"net"
@@ -26,7 +27,7 @@ func ListenAndServe(addr string) {
 		utils.CheckError(err)
 
 		// set timeout
-		conn.SetDeadline(time.Now().Add(time.Second * 30))
+		conn.SetDeadline(time.Now().Add(time.Minute))
 		utils.CheckError(err)
 
 		// err = conn.SetKeepAlivePeriod(time.Minute)
@@ -72,8 +73,21 @@ func handleConnection(c net.Conn) {
 		if err != nil {
 			log.Fatalln(err)
 		}
-		_ = v.Array()
-		conn.Conn.Write([]byte("+OK\r\n"))
+		values := v.Array()
+		if len(values) < 1 {
+			continue
+		}
+		command := strings.ToUpper(values[0].String())
+		switch command {
+		case "PING":
+			conn.WriteSimpleString("PONG")
+		case "ECHO":
+			conn.WriteSimpleString(values[1].String())
+		default:
+			// conn.WriteError("ERR unknown command '" + command + "'")
+			conn.Conn.Write([]byte("+OK\r\n"))
+		}
+
 	}
 
 }

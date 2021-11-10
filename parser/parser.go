@@ -3,6 +3,7 @@ package parser
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"strconv"
 )
 
@@ -48,8 +49,9 @@ func (v Value) String() string {
 	case Integer:
 		return strconv.Itoa(v.integer)
 	case BulkString:
-		// TODO array parsing
-		return ""
+		return string(v.str)
+	case Array:
+		return fmt.Sprintf("%v", v.array)
 	}
 	return ""
 }
