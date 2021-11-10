@@ -87,7 +87,7 @@ func (r *RESPReader) readBulkStringValue() (Value, int, error) {
 			return NullValue(), n, &ErrProtocol{"invalid line ending"}
 		}
 
-		return Value{typ: BulkString, str: buf}, n, nil
+		return Value{typ: BulkString, str: buf[:l]}, n, nil
 	}
 }
 
