@@ -2,7 +2,7 @@ package parser
 
 import (
 	"bufio"
-	"reflect"
+	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
 )
@@ -51,11 +51,11 @@ func TestRESPReader_ReadValue(t *testing.T) {
 				typ: Array,
 				array: []Value{
 					{
-						typ: SimpleString,
+						typ: BulkString,
 						str: []byte("GET"),
 					},
 					{
-						typ: SimpleString,
+						typ: BulkString,
 						str: []byte("USER"),
 					},
 				},
@@ -74,7 +74,7 @@ func TestRESPReader_ReadValue(t *testing.T) {
 				t.Errorf("ReadValue() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.wantValue) {
+			if !assert.Equal(t, tt.wantValue, got) {
 				t.Errorf("ReadValue() got = %v, wantValue %v", got, tt.wantValue)
 			}
 			if got1 != tt.wantN {
