@@ -4,8 +4,23 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"net"
 	"strconv"
 )
+
+type RESPConn struct {
+	*RESPReader
+	*RESPWriter
+	Conn net.Conn
+}
+
+func NewRESPConn(c net.Conn) *RESPConn {
+	return &RESPConn{
+		RESPWriter: NewRESPWriter(c),
+		RESPReader: NewRESPReader(c),
+		Conn:       c,
+	}
+}
 
 type ReplyType byte
 

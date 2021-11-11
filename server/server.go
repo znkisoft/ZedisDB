@@ -1,8 +1,10 @@
 package server
 
 import (
+	"github.com/znkisoft/zedisDB/handler"
 	"github.com/znkisoft/zedisDB/lib/logger"
 	"github.com/znkisoft/zedisDB/lib/utils"
+	"github.com/znkisoft/zedisDB/parser"
 	"log"
 	"strings"
 	"time"
@@ -33,41 +35,12 @@ func ListenAndServe(addr string) {
 		// err = conn.SetKeepAlivePeriod(time.Minute)
 		// utils.CheckError
 
-		// go func() {
-		// 	reader, writer := bufio.NewReader(conn), bufio.NewWriter(conn)
-		// 	for {
-		// 		msg, err := reader.ReadString('\n')
-		// 		if err != nil {
-		// 			if _, ok := err.(*parser.ErrProtocol); ok {
-		// 				writer.WriteString("-ERR" + err.Error() + "\r\n")
-		// 				writer.Flush()
-		//
-		// 			} else if err == io.EOF {
-		// 				// close connection if end with io.EOF
-		// 				logger.CommonLog.Println("connection closed")
-		// 				os.Exit(1)
-		// 			} else {
-		// 				writer.WriteString("-ERR unknown error\r\n")
-		// 				writer.Flush()
-		// 			}
-		// 			return
-		// 		}
-		// 		// debug
-		// 		logger.CommonLog.Printf("(incoming message): %s", msg)
-		//
-		// 		// TODO resolve coming request with payload
-		// 		// conn.Write(bytes)
-		// 		writer.WriteString("+PONG\r\n")
-		// 		writer.Flush()
-		// 	}
-		// }()
-
 		go handleConnection(conn)
 	}
 }
 
 func handleConnection(c net.Conn) {
-	conn := NewRESPConn(c)
+	conn := parser.NewRESPConn(c)
 	for {
 		v, _, err := conn.ReadValue()
 		if err != nil {
@@ -78,16 +51,12 @@ func handleConnection(c net.Conn) {
 			continue
 		}
 		command := strings.ToUpper(values[0].String())
-		switch command {
-		case "PING":
-			conn.WriteSimpleString("PONG")
-		case "ECHO":
-			conn.WriteSimpleString(values[1].String())
-		default:
-			// conn.WriteError("ERR unknown command '" + command + "'")
-			conn.Conn.Write([]byte("+OK\r\n"))
-		}
 
+		if cmd, ok := handler.Router[command]; ok {
+			cmd.Func(conn, values)
+		} else {
+			conn.Conn.Write([]byte("-ERR Unknown Command\r\n"))
+		}
 	}
 
 }
