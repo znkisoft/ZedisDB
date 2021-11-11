@@ -1,4 +1,4 @@
-# ZedisDB
+# ZedisDB (WIP)
 
 > a key-value memory database written in Go
 
