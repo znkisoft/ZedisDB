@@ -4,6 +4,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/znkisoft/zedisDB/server"
 	"testing"
 	"time"
 
@@ -16,8 +17,10 @@ var (
 )
 
 func init() {
+	go server.ListenAndServe(":6380")
+
 	rdb = redis.NewClient(&redis.Options{
-		Addr:         ":7000",
+		Addr:         ":6380",
 		DialTimeout:  10 * time.Second,
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 30 * time.Second,
