@@ -5,7 +5,7 @@ import (
 	"github.com/znkisoft/zedisDB/lib/logger"
 	"github.com/znkisoft/zedisDB/lib/utils"
 	"github.com/znkisoft/zedisDB/parser"
-	"log"
+	"io"
 	"strings"
 	"time"
 
@@ -41,10 +41,15 @@ func ListenAndServe(addr string) {
 
 func handleConnection(c net.Conn) {
 	conn := parser.NewRESPConn(c)
+	defer conn.Conn.Close()
+
 	for {
 		v, _, err := conn.ReadValue()
 		if err != nil {
-			log.Fatalln(err)
+			if err == io.EOF {
+				logger.CommonLog.Printf("(disconnected) %s", c.RemoteAddr())
+				return
+			}
 		}
 		values := v.Array()
 		if len(values) < 1 {

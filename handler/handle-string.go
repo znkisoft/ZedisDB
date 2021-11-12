@@ -9,5 +9,5 @@ func PingCmdFunc(con *parser.RESPConn, cmdArgs []parser.Value) {
 }
 
 func EchoCmdFunc(con *parser.RESPConn, cmdArgs []parser.Value) {
-	con.WriteSimpleString(cmdArgs[0].String())
+	con.WriteSimpleString(cmdArgs[1].String())
 }
