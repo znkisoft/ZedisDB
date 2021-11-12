@@ -29,7 +29,7 @@ func ListenAndServe(addr string) {
 		utils.CheckError(err)
 
 		// set timeout
-		conn.SetDeadline(time.Now().Add(time.Minute))
+		err = conn.SetDeadline(time.Now().Add(time.Second * 15))
 		utils.CheckError(err)
 
 		// err = conn.SetKeepAlivePeriod(time.Minute)
@@ -53,7 +53,7 @@ func handleConnection(c net.Conn) {
 		}
 		values := v.Array()
 		if len(values) < 1 {
-			continue
+			return
 		}
 		command := strings.ToUpper(values[0].String())
 
