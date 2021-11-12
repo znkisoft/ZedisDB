@@ -25,7 +25,7 @@ const (
 )
 
 var Router = map[string]Cmd{
-	"PING": {Name: "ping", Arity: 0, Func: PingCmdFunc, Category: Strings},
-	"ECHO": {Name: "echo", Arity: 1, Func: EchoCmdFunc, Category: Strings},
+	"PING": {Name: "ping", Arity: 0, Func: DefaultFunc(PingCmdFunc), Category: Strings},
+	"ECHO": {Name: "echo", Arity: 1, Func: DefaultFunc(EchoCmdFunc), Category: Strings},
 	// "GET": {Name: "get", Arity: 2, Func: CmdFuncGet, Category: Strings},
 }

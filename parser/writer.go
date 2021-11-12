@@ -57,3 +57,7 @@ func (r *RESPWriter) WriteValue(v Value) error {
 func (r *RESPWriter) WriteSimpleString(s string) {
 	r.R.Write([]byte("+" + s + "\r\n"))
 }
+
+func (r *RESPWriter) WriteError(typ ErrType, s string) {
+	r.R.Write([]byte("-" + typ.String() + " " + s + "\r\n"))
+}

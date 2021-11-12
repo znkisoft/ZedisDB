@@ -1,12 +1,27 @@
 package parser
 
-// const (
-// 	?Common = iota
-// 	Syntax
-// 	Protocol
-// 	Param
-// 	Server
-// )
+type ErrType uint32
+
+const (
+	Server ErrType = iota
+	Syntax
+	Protocol
+	Param
+)
+
+func (t ErrType) String() string {
+	switch t {
+	case Server:
+		return "Server"
+	case Syntax:
+		return "Syntax"
+	case Protocol:
+		return "Protocol"
+	case Param:
+		return "Param"
+	}
+	return ""
+}
 
 type ErrProtocol struct {
 	Message string
