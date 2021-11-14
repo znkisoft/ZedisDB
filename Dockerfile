@@ -9,7 +9,7 @@ COPY go.mod ./
 RUN go mod download
 
 COPY . .
-RUN go build -o app
+RUN go build -o zedis
 
-EXPOSE 6379
-CMD ./app
+EXPOSE ${ZEDIS_PORT}
+CMD ./zedis
