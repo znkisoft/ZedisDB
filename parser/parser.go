@@ -83,6 +83,10 @@ func EmptyStringValue() Value {
 	return Value{typ: BulkString, str: []byte("0\r\n")}
 }
 
+func NullStringValue() Value {
+	return Value{typ: BulkString, null: true, str: []byte("-1")}
+}
+
 func (v Value) Integer() int {
 	switch v.typ {
 	case Integer:
@@ -172,4 +176,67 @@ func formatOneLine(s string) string {
 		}
 	}
 	return buf.String()
+}
+
+func (v Value) MarshalRESP() ([]byte, error) {
+	return marshalAnyRESP(v)
+}
+
+func marshalAnyRESP(v Value) ([]byte, error) {
+	switch v.typ {
+	case SimpleString, Err:
+		return marshalSimpleRESP(v.typ, v.str)
+	case Integer:
+		return marshalSimpleRESP(v.typ, []byte(strconv.Itoa(v.integer)))
+	case BulkString:
+		return marshalBulkRESP(v)
+	case Array:
+		return marshalArrayRESP(v)
+	default:
+		if v.typ == 0 && v.null {
+			return []byte("$-1\r\n"), nil
+		}
+		return nil, errors.New("marshal unknown type")
+	}
+}
+
+func marshalSimpleRESP(typ ReplyType, b []byte) ([]byte, error) {
+	return []byte(fmt.Sprintf("%c%s\r\n", typ, b)), nil
+}
+
+func marshalBulkRESP(v Value) ([]byte, error) {
+	if v.IsNull() {
+		return []byte("$-1\r\n"), nil
+	}
+	szb := []byte(strconv.FormatInt(int64(len(v.str)), 10))
+	bb := make([]byte, 5+len(szb)+len(v.str))
+	bb[0] = '$'
+	copy(bb[1:], szb)
+	bb[1+len(szb)+0] = '\r'
+	bb[1+len(szb)+1] = '\n'
+	copy(bb[1+len(szb)+2:], v.str)
+	bb[1+len(szb)+2+len(v.str)+0] = '\r'
+	bb[1+len(szb)+2+len(v.str)+1] = '\n'
+	return bb, nil
+}
+
+func marshalArrayRESP(v Value) ([]byte, error) {
+	if v.IsNull() {
+		return []byte("*-1\r\n"), nil
+	}
+	var buf bytes.Buffer
+	szb := []byte(strconv.FormatInt(int64(len(v.array)), 10))
+	buf.Grow(3 + len(szb) + 16*len(v.array))
+	buf.WriteByte('*')
+	buf.Write(szb)
+	buf.WriteByte('\r')
+	buf.WriteByte('\n')
+	for i := 0; i < len(v.array); i++ {
+		data, err := v.array[i].MarshalRESP()
+		if err != nil {
+			return nil, err
+		}
+		buf.Write(data)
+	}
+	return buf.Bytes(), nil
 }

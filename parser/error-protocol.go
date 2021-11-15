@@ -4,6 +4,7 @@ type ErrType uint32
 
 const (
 	Server ErrType = iota
+
 	Syntax
 	Protocol
 	Param
@@ -24,6 +25,7 @@ func (t ErrType) String() string {
 }
 
 type ErrProtocol struct {
+	Type    ErrType
 	Message string
 }
 
