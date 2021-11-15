@@ -16,8 +16,8 @@ func NewDict() *Dict {
 }
 
 func (dict *Dict) Get(key string) (interface{}, bool) {
-	dict.mu.Lock()
-	defer dict.mu.Unlock()
+	dict.mu.RLock()
+	defer dict.mu.RUnlock()
 	if v, ok := dict.data[key]; ok {
 		return v, true
 	}
