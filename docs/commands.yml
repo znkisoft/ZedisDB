@@ -1,0 +1,14 @@
+connection: [ping, echo]
+string
+hash
+keys
+list
+pubsub
+server
+set
+sorted_set
+transactions
+#stream
+#bitmap
+#cluster
+#hyperloglog
