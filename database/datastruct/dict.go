@@ -24,10 +24,11 @@ func (dict *Dict) Get(key string) (interface{}, bool) {
 	return nil, false
 }
 
-func (dict *Dict) Set(key string, value interface{}) {
+func (dict *Dict) Set(key string, value interface{}) error {
 	dict.mu.Lock()
 	dict.data[key] = value
 	defer dict.mu.Unlock()
+	return nil
 }
 
 func (dict *Dict) Delete(key string) {

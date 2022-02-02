@@ -14,14 +14,20 @@ func TestDict(t *testing.T) {
 	})
 
 	t.Run("TestSetAndGet", func(t *testing.T) {
-		dict.Set("key", "value")
+		err := dict.Set("key", "value")
+		if err != nil {
+			t.Log(err)
+		}
 		if v, _ := dict.Get("key"); v != "value" {
 			t.Errorf("Expected value: \"value\"")
 		}
 	})
 
 	t.Run("TestDelete", func(t *testing.T) {
-		dict.Set("key2", "value")
+		err := dict.Set("key2", "value")
+		if err != nil {
+			t.Log(err)
+		}
 		if v, _ := dict.Get("key2"); v != "value" {
 			t.Errorf("Expected value: \"value\"")
 		}
@@ -41,7 +47,7 @@ func BenchmarkKV(b *testing.B) {
 	// BenchmarkKV-8   	 7026129	       152.9 ns/op
 	for i := 0; i < b.N; i++ {
 		dict := NewDict()
-		dict.Set("key", "value")
+		_ = dict.Set("key", "value")
 		dict.Get("key")
 	}
 }

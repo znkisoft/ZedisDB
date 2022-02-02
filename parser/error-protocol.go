@@ -17,13 +17,13 @@ const (
 func (t ErrType) String() string {
 	switch t {
 	case Server:
-		return "Server"
+		return "server"
 	case Syntax:
-		return "Syntax"
+		return "syntax"
 	case Protocol:
-		return "Protocol"
+		return "protocol"
 	case Param:
-		return "Param"
+		return "param"
 	}
 	return ""
 }

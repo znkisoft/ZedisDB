@@ -2,9 +2,10 @@ package parser
 
 import (
 	"bufio"
-	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestRESPReader_ReadValue(t *testing.T) {
@@ -63,6 +64,7 @@ func TestRESPReader_ReadValue(t *testing.T) {
 			wantN:   20,
 			wantErr: false,
 		},
+		// TODO add more tests
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
