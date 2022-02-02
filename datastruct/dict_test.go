@@ -5,7 +5,6 @@ import (
 )
 
 func TestDict(t *testing.T) {
-	// test dict functionality
 	dict := NewDict()
 
 	t.Run("TestGetNull", func(t *testing.T) {
@@ -34,7 +33,12 @@ func TestDict(t *testing.T) {
 }
 
 func BenchmarkKV(b *testing.B) {
-
+	// goos: darwin
+	// goarch: amd64
+	// pkg: github.com/znkisoft/zedisDB/datastruct
+	// cpu: VirtualApple @ 2.50GHz
+	// BenchmarkKV
+	// BenchmarkKV-8   	 7026129	       152.9 ns/op
 	for i := 0; i < b.N; i++ {
 		dict := NewDict()
 		dict.Set("key", "value")

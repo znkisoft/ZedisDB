@@ -21,7 +21,7 @@ func TestRESPReader_ReadValue(t *testing.T) {
 		{
 			name: "simple string",
 			fields: fields{
-				rd: bufio.NewReader(bufio.NewReader(strings.NewReader("+OK\r\n"))),
+				rd: bufio.NewReader(strings.NewReader("+OK\r\n")),
 			},
 			wantValue: Value{
 				typ: SimpleString,
@@ -33,7 +33,7 @@ func TestRESPReader_ReadValue(t *testing.T) {
 		{
 			name: "integer",
 			fields: fields{
-				rd: bufio.NewReader(bufio.NewReader(strings.NewReader(":123\r\n"))),
+				rd: bufio.NewReader(strings.NewReader(":123\r\n")),
 			},
 			wantValue: Value{
 				typ:     Integer,
@@ -45,7 +45,7 @@ func TestRESPReader_ReadValue(t *testing.T) {
 		{
 			name: "bulk string",
 			fields: fields{
-				rd: bufio.NewReader(bufio.NewReader(strings.NewReader("*2\r\n$3\r\nGET\r\n$4\r\nUSER\r\n\r\n"))),
+				rd: bufio.NewReader(strings.NewReader("*2\r\n$3\r\nGET\r\n$4\r\nUSER\r\n\r\n")),
 			},
 			wantValue: Value{
 				typ: Array,

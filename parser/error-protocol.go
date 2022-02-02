@@ -1,5 +1,9 @@
 package parser
 
+import (
+	"fmt"
+)
+
 type ErrType uint32
 
 const (
@@ -30,5 +34,5 @@ type ErrProtocol struct {
 }
 
 func (err ErrProtocol) Error() string {
-	return "protocol error: " + err.Message
+	return fmt.Sprintf("protocol error[%s]: %s", err.Type.String(), err.Message)
 }
