@@ -33,7 +33,7 @@ func TestRESPReader_ReadValue(t *testing.T) {
 				typ: SimpleString,
 				str: []byte("OK"),
 			},
-			wantN:   4,
+			wantN:   5,
 			wantErr: false,
 		},
 		{
@@ -45,7 +45,7 @@ func TestRESPReader_ReadValue(t *testing.T) {
 				typ:     Integer,
 				integer: 123,
 			},
-			wantN:   5,
+			wantN:   6,
 			wantErr: false,
 		},
 		{
@@ -66,10 +66,9 @@ func TestRESPReader_ReadValue(t *testing.T) {
 					},
 				},
 			},
-			wantN:   20,
+			wantN:   23,
 			wantErr: false,
 		},
-		// TODO add more tests
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

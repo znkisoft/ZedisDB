@@ -4,9 +4,11 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/znkisoft/zedisDB/server"
+	"os"
 	"testing"
 	"time"
+
+	"github.com/znkisoft/zedisDB/server"
 
 	"github.com/go-redis/redis/v8"
 )
@@ -16,7 +18,8 @@ var (
 	rdb *redis.Client
 )
 
-func init() {
+func TestMain(m *testing.M) {
+	server := server.NewServer()
 	go server.ListenAndServe(":6380")
 
 	rdb = redis.NewClient(&redis.Options{
@@ -27,6 +30,9 @@ func init() {
 		PoolSize:     10,
 		PoolTimeout:  30 * time.Second,
 	})
+
+	exitCode := m.Run()
+	os.Exit(exitCode)
 }
 
 func TestServerConnection(t *testing.T) {

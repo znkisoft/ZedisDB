@@ -11,3 +11,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - [x] RESP protocol parser
 - [x] TCP server tested with `ping`, `echo` requests
+
+## [0.0.2] - 2022-02-02
+
+### Added
+
+- [x] GET & SET key-value
+
+### Issues
+- [ ] read bulk value

@@ -13,7 +13,7 @@ func TestWriter(t *testing.T) {
 	wr.WriteString("HELLO")
 	wr.WriteSimpleString("HELLO")
 	wr.WriteError(ErrProtocol{
-		Type:    Server,
+		Type:    Internal,
 		Message: "HELLO",
 	})
 	wr.WriteInteger(1)
@@ -25,7 +25,7 @@ func TestWriter(t *testing.T) {
 		"$5\r\nHELLO\r\n" +
 		"$5\r\nHELLO\r\n" +
 		"+HELLO\r\n" +
-		"-server HELLO\r\n" +
+		"-[internal]: HELLO\r\n" +
 		":1\r\n" +
 		"$-1\r\n" +
 		"+HELLO\r\n"

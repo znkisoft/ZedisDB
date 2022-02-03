@@ -7,23 +7,22 @@ import (
 type ErrType uint32
 
 const (
-	Server ErrType = iota
-
+	Internal ErrType = iota + 1
 	Syntax
 	Protocol
-	Param
+	Client
 )
 
 func (t ErrType) String() string {
 	switch t {
-	case Server:
-		return "server"
+	case Internal:
+		return "internal"
 	case Syntax:
 		return "syntax"
 	case Protocol:
 		return "protocol"
-	case Param:
-		return "param"
+	case Client:
+		return "client"
 	}
 	return ""
 }
@@ -34,5 +33,5 @@ type ErrProtocol struct {
 }
 
 func (err ErrProtocol) Error() string {
-	return fmt.Sprintf("protocol error[%s]: %s", err.Type.String(), err.Message)
+	return fmt.Sprintf("[%s]: %s", err.Type.String(), err.Message)
 }

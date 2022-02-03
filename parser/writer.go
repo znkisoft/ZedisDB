@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"io"
 )
 
@@ -31,7 +32,8 @@ func (r *RESPWriter) WriteSimpleString(s string) error {
 }
 
 func (r *RESPWriter) WriteError(e ErrProtocol) error {
-	_, err := r.R.Write([]byte("-" + e.Type.String() + " " + e.Message + "\r\n"))
+	errMsg := fmt.Sprintf("[%s]: %s", e.Type.String(), e.Message)
+	_, err := r.R.Write([]byte("-" + errMsg + "\r\n"))
 	return err
 }
 

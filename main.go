@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"os"
 
 	"github.com/znkisoft/zedisDB/server"
@@ -12,5 +13,6 @@ func main() {
 		port = "6379"
 	}
 
-	server.ListenAndServe(":" + port)
+	s := server.NewServer()
+	log.Fatal(s.ListenAndServe(":" + port))
 }

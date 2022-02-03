@@ -1,5 +1,9 @@
-connection: [ping, echo]
-string
+connection:
+  - PING
+  - ECHO
+string:
+  - SET
+  - GET
 hash
 keys
 list
