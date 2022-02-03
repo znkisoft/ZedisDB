@@ -3,6 +3,11 @@ connection:
   - ECHO
 string:
   - SET
+    - EX seconds -- Set the specified expire time, in seconds.
+    - EXAT timestamp-seconds -- Set the specified Unix time at which the key will expire, in seconds.
+    - NX -- Only set the key if it does not already exist.
+    - XX -- Only set the key if it already exist.
+    - KEEPTTL -- Retain the time to live associated with the key.
   - GET
 hash
 keys

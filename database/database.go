@@ -10,11 +10,8 @@ type Db struct {
 }
 
 func NewDb() *Db {
-	debugDict := datastruct.NewDict()
-	_ = debugDict.Set("version", "debug")
-	_ = debugDict.Set("num", 1)
 	return &Db{
-		Dict:    debugDict,
+		Dict:    datastruct.NewDict(),
 		Expires: datastruct.NewDict(),
 	}
 }
