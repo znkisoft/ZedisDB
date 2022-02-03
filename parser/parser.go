@@ -127,6 +127,18 @@ func FloatValue(f float64) Value {
 	return StringValue(strconv.FormatFloat(f, 'f', -1, 64))
 }
 
+// BoolValue returns a RESP integer representation of a bool.
+func BoolValue(t bool) Value {
+	if t {
+		return Value{typ: ':', integer: 1}
+	}
+	return Value{typ: ':', integer: 0}
+}
+
+func (v Value) Bool() bool {
+	return v.Integer() != 0
+}
+
 func (v Value) IsNull() bool {
 	return v.null
 }
@@ -134,6 +146,29 @@ func (v Value) IsNull() bool {
 // NullValue returns a null value, origin: "$-1\r\n"
 func NullValue() Value {
 	return Value{typ: BulkString, null: true}
+}
+
+// MultiBulkValue returns a RESP array which contains one or more bulk strings. l.
+func MultiBulkValue(commandName string, args ...interface{}) Value {
+	vals := make([]Value, len(args)+1)
+	vals[0] = StringValue(commandName)
+	for i, arg := range args {
+		if rval, ok := arg.(Value); ok && rval.Type() == BulkString {
+			vals[i+1] = rval
+			continue
+		}
+		switch arg := arg.(type) {
+		default:
+			vals[i+1] = StringValue(fmt.Sprintf("%v", arg))
+		case []byte:
+			vals[i+1] = StringValue(string(arg))
+		case string:
+			vals[i+1] = StringValue(arg)
+		case nil:
+			vals[i+1] = NullValue()
+		}
+	}
+	return ArrayValue(vals)
 }
 
 func (v Value) Error() error {
@@ -161,8 +196,61 @@ func ArrayValue(vals []Value) Value {
 	}
 }
 
+// AnyValue returns a RESP value from an interface. This function infers the types. Arrays are not allowed.
+func AnyValue(v interface{}) Value {
+	switch v := v.(type) {
+	default:
+		return StringValue(fmt.Sprintf("%v", v))
+	case nil:
+		return NullValue()
+	case int:
+		return IntegerValue(v)
+	case uint:
+		return IntegerValue(int(v))
+	case int8:
+		return IntegerValue(int(v))
+	case uint8:
+		return IntegerValue(int(v))
+	case int16:
+		return IntegerValue(int(v))
+	case uint16:
+		return IntegerValue(int(v))
+	case int32:
+		return IntegerValue(int(v))
+	case uint32:
+		return IntegerValue(int(v))
+	case int64:
+		return IntegerValue(int(v))
+	case uint64:
+		return IntegerValue(int(v))
+	case bool:
+		return BoolValue(v)
+	case float32:
+		return FloatValue(float64(v))
+	case float64:
+		return FloatValue(float64(v))
+	case []byte:
+		return BytesValue(v)
+	case string:
+		return StringValue(v)
+	}
+}
+
 func (v Value) Type() ReplyType {
 	return v.typ
+}
+
+// Equals compares one value to another value.
+func (v Value) Equals(value Value) bool {
+	data1, err := v.MarshalRESP()
+	if err != nil {
+		return false
+	}
+	data2, err := value.MarshalRESP()
+	if err != nil {
+		return false
+	}
+	return string(data1) == string(data2)
 }
 
 func formatOneLine(s string) string {
@@ -196,7 +284,7 @@ func marshalAnyRESP(v Value) ([]byte, error) {
 		if v.typ == 0 && v.null {
 			return []byte("$-1\r\n"), nil
 		}
-		return nil, errors.New("marshal unknown type")
+		return nil, errors.New("unknown resp type")
 	}
 }
 

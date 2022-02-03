@@ -1,13 +1,14 @@
 package server
 
 import (
+	"io"
+	"strings"
+	"time"
+
 	"github.com/znkisoft/zedisDB/handler"
 	"github.com/znkisoft/zedisDB/lib/logger"
 	"github.com/znkisoft/zedisDB/lib/utils"
 	"github.com/znkisoft/zedisDB/parser"
-	"io"
-	"strings"
-	"time"
 
 	"net"
 )
@@ -58,7 +59,7 @@ func handleConnection(c net.Conn) {
 		command := strings.ToUpper(values[0].String())
 
 		if cmd, ok := handler.Router[command]; ok {
-			cmd.Func(conn, values)
+			cmd.HandlerFunc(conn, values)
 		} else {
 			conn.Conn.Write([]byte("-ERR Unknown Command\r\n"))
 		}

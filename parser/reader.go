@@ -20,25 +20,30 @@ func (r *RESPReader) ReadValue() (Value, int, error) {
 	return r.readValue()
 }
 
-func (r *RESPReader) readValue() (Value, int, error) {
+func (r *RESPReader) readValue() (val Value, n int, err error) {
+	// TODO add support for bulk value
+	rn := 0
 	t, err := r.rd.ReadByte()
 	if err != nil {
 		return NullValue(), 0, err
 	}
+	n++
 	typ := ReplyType(t)
 
 	switch typ {
 	case Array:
-		return r.readArrayValue()
+		val, rn, err = r.readArrayValue()
 	case SimpleString, Err:
-		return r.readSimpleValue(typ)
+		val, rn, err = r.readSimpleValue(typ)
 	case Integer:
-		return r.readIntegerValue()
+		val, rn, err = r.readIntegerValue()
 	case BulkString:
-		return r.readBulkStringValue()
+		val, rn, err = r.readBulkStringValue()
 	default:
 		return NullValue(), 0, errors.New("unknown type")
 	}
+	n += rn
+	return
 }
 
 func (r *RESPReader) readArrayValue() (Value, int, error) {

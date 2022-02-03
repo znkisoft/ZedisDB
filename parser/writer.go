@@ -31,9 +31,15 @@ func (r *RESPWriter) WriteSimpleString(s string) error {
 }
 
 func (r *RESPWriter) WriteError(e ErrProtocol) error {
-	// TODO rewrite inside WriteValue
 	_, err := r.R.Write([]byte("-" + e.Type.String() + " " + e.Message + "\r\n"))
 	return err
+}
+
+func (r *RESPWriter) WriteBytes(b []byte) error {
+	return r.WriteValue(BytesValue(b))
+}
+func (r *RESPWriter) WriteString(s string) error {
+	return r.WriteValue(StringValue(s))
 }
 
 func (r *RESPWriter) WriteNull() error {
