@@ -17,6 +17,61 @@ type Server struct {
 	mu       sync.RWMutex
 	handlers map[string]handler.CmdFunc
 	accept   func(conn *parser.RESPConn) bool
+
+	// TODO add stats fields
+	// // Fields used only for stats
+	// // 服务器启动时间
+	// time_t stat_starttime;          /* Server start time */
+	// // 已处理命令的数量
+	// long long stat_numcommands;     /* Number of processed commands */
+	// // 服务器接到的连接请求数量
+	// long long stat_numconnections;  /* Number of connections received */
+	//
+	// // 已过期的键数量
+	// long long stat_expiredkeys;     /* Number of expired keys */
+	//
+	// // 因为回收内存而被释放的过期键的数量
+	// long long stat_evictedkeys;     /* Number of evicted keys (maxmemory) */
+	//
+	// // 成功查找键的次数
+	// long long stat_keyspace_hits;   /* Number of successful lookups of keys */
+	//
+	// // 查找键失败的次数
+	// long long stat_keyspace_misses; /* Number of failed lookups of keys */
+	//
+	// // 已使用内存峰值
+	// size_t stat_peak_memory;        /* Max used memory record */
+	//
+	// // 最后一次执行 fork() 时消耗的时间
+	// long long stat_fork_time;       /* Time needed to perform latest fork() */
+	//
+	// // 服务器因为客户端数量过多而拒绝客户端连接的次数
+	// long long stat_rejected_conn;   /* Clients rejected because of maxclients */
+	//
+	// // 执行 full sync 的次数
+	// long long stat_sync_full;       /* Number of full resyncs with slaves. */
+	//
+	// // PSYNC 成功执行的次数
+	// long long stat_sync_partial_ok; /* Number of accepted PSYNC requests. */
+	//
+	// // PSYNC 执行失败的次数
+	// long long stat_sync_partial_err;/
+
+	// TODO add pub/sub fields
+	// /* Pubsub */
+	// // 字典，键为频道，值为链表
+	// // 链表中保存了所有订阅某个频道的客户端
+	// // 新客户端总是被添加到链表的表尾
+	// dict *pubsub_channels;  /* Map channels to list of subscribed clients */
+	//
+	// // 这个链表记录了客户端订阅的所有模式的名字
+	// list *pubsub_patterns;  /* A list of pubsub_patterns */
+	// typedef struct pubsubPattern {
+	// 	// 订阅模式的客户端
+	// 	redisClient *client;
+	// 	// 被订阅的模式
+	// 	robj *pattern;
+	// } pubsubPattern;
 }
 
 func NewServer() *Server {

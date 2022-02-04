@@ -45,3 +45,20 @@ func SetCmdFunc(con *parser.RESPConn, cmdArgs []parser.Value) error {
 	}
 	return con.WriteSimpleString("OK")
 }
+
+func SetNxCmdFunc(con *parser.RESPConn, cmdArgs []parser.Value) error {
+	key := cmdArgs[1].String()
+	if _, found := db.Dict.Get(key); found {
+		return con.WriteInteger(0)
+	}
+	err := db.Dict.Set(key, cmdArgs[2])
+	logger.CommonLog.Printf("[SETNX]key: %s, value: %s", key, cmdArgs[2])
+	if err != nil {
+		return con.WriteError(parser.ErrProtocol{Type: parser.Internal, Message: err.Error()})
+	}
+	return con.WriteInteger(1)
+}
+
+func SetExCmdFunc(con *parser.RESPConn, cmdArgs []parser.Value) error {
+	return nil
+}
