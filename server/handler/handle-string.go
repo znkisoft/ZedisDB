@@ -35,6 +35,10 @@ func GetCmdFunc(con *parser.RESPConn, cmdArgs []parser.Value) error {
 	return con.WriteValue(parser.AnyValue(val))
 }
 
+/*SetCmdFunc
+pattern: SET key value [NX] [XX] [EX <seconds>] [PX <milliseconds>]
+todo: nx xx ex px
+*/
 func SetCmdFunc(con *parser.RESPConn, cmdArgs []parser.Value) error {
 	key := cmdArgs[1].String()
 	value := cmdArgs[2]
@@ -62,3 +66,7 @@ func SetNxCmdFunc(con *parser.RESPConn, cmdArgs []parser.Value) error {
 func SetExCmdFunc(con *parser.RESPConn, cmdArgs []parser.Value) error {
 	return nil
 }
+
+// TODO
+// func setGenericCommand(con *parser.RESPConn, cmdArgs []parser.Value) error {
+// }
