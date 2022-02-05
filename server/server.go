@@ -7,8 +7,8 @@ import (
 
 	"github.com/znkisoft/zedisDB/server/handler"
 
-	"github.com/znkisoft/zedisDB/lib/logger"
 	"github.com/znkisoft/zedisDB/parser"
+	"github.com/znkisoft/zedisDB/pkg/logger"
 
 	"net"
 )
@@ -17,8 +17,10 @@ type Server struct {
 	mu       sync.RWMutex
 	handlers map[string]handler.CmdFunc
 	accept   func(conn *parser.RESPConn) bool
+	lruClock int64 /* Clock for LRU eviction */
 
 	// TODO add stats fields
+	// Stat stat
 	// // Fields used only for stats
 	// // 服务器启动时间
 	// time_t stat_starttime;          /* Server start time */

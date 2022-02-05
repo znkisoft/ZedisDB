@@ -1,11 +1,15 @@
 package datastruct
 
 import (
+	"reflect"
 	"testing"
+
+	"github.com/znkisoft/zedisDB/database/container"
 )
 
 func TestDict(t *testing.T) {
 	dict := NewDict()
+	o := container.CreateZedisObject(container.StringTyp, "value")
 
 	t.Run("TestGetNull", func(t *testing.T) {
 		if v, _ := dict.Get("test"); v != nil {
@@ -14,21 +18,21 @@ func TestDict(t *testing.T) {
 	})
 
 	t.Run("TestSetAndGet", func(t *testing.T) {
-		err := dict.Set("key", "value")
+		err := dict.Set("key", o)
 		if err != nil {
 			t.Log(err)
 		}
-		if v, _ := dict.Get("key"); v != "value" {
+		if v, _ := dict.Get("key"); !reflect.DeepEqual(v, o) {
 			t.Errorf("Expected value: \"value\"")
 		}
 	})
 
 	t.Run("TestDelete", func(t *testing.T) {
-		err := dict.Set("key2", "value")
+		err := dict.Set("key2", o)
 		if err != nil {
 			t.Log(err)
 		}
-		if v, _ := dict.Get("key2"); v != "value" {
+		if v, _ := dict.Get("key2"); !reflect.DeepEqual(v, o) {
 			t.Errorf("Expected value: \"value\"")
 		}
 		dict.Delete("key")
@@ -39,15 +43,15 @@ func TestDict(t *testing.T) {
 }
 
 func BenchmarkKV(b *testing.B) {
+	o := container.CreateZedisObject(container.StringTyp, "value")
 	// goos: darwin
-	// goarch: amd64
-	// pkg: github.com/znkisoft/zedisDB/datastruct
-	// cpu: VirtualApple @ 2.50GHz
+	// goarch: arm64
+	// pkg: github.com/znkisoft/zedisDB/database/datastruct
 	// BenchmarkKV
-	// BenchmarkKV-8   	 7026129	       152.9 ns/op
+	// BenchmarkKV-8   	11695563	   	   101.2 ns/op
 	for i := 0; i < b.N; i++ {
 		dict := NewDict()
-		_ = dict.Set("key", "value")
+		_ = dict.Set("key", o)
 		dict.Get("key")
 	}
 }
