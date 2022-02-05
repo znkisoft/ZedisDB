@@ -11,7 +11,7 @@ func DefaultFunc(fn CmdFunc, argLimit int) CmdFunc {
 	return func(con *parser.RESPConn, cmdArgs []parser.Value) error {
 		logger.CommonLog.Printf("(handler)[%s] %s", con.Conn.RemoteAddr(), cmdArgs)
 		if len(cmdArgs) != argLimit {
-			return con.WriteError(parser.ErrProtocol{Type: parser.Client, Message: "wrong number of arguments, expect " + strconv.Itoa(argLimit)})
+			return parser.ErrProtocol{Type: parser.Client, Message: "wrong number of arguments, expect " + strconv.Itoa(argLimit)}
 		}
 		return fn(con, cmdArgs)
 	}
@@ -45,7 +45,7 @@ func SetCmdFunc(con *parser.RESPConn, cmdArgs []parser.Value) error {
 	err := db.Dict.Set(key, value)
 	logger.CommonLog.Printf("[SET]key: %s, value: %s", key, value)
 	if err != nil {
-		return con.WriteError(parser.ErrProtocol{Type: parser.Internal, Message: err.Error()})
+		return parser.ErrProtocol{Type: parser.Internal, Message: err.Error()}
 	}
 	return con.WriteSimpleString("OK")
 }
@@ -58,7 +58,7 @@ func SetNxCmdFunc(con *parser.RESPConn, cmdArgs []parser.Value) error {
 	err := db.Dict.Set(key, cmdArgs[2])
 	logger.CommonLog.Printf("[SETNX]key: %s, value: %s", key, cmdArgs[2])
 	if err != nil {
-		return con.WriteError(parser.ErrProtocol{Type: parser.Internal, Message: err.Error()})
+		return parser.ErrProtocol{Type: parser.Internal, Message: err.Error()}
 	}
 	return con.WriteInteger(1)
 }

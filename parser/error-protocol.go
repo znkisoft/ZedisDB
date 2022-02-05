@@ -33,5 +33,5 @@ type ErrProtocol struct {
 }
 
 func (err ErrProtocol) Error() string {
-	return fmt.Sprintf("[%s]: %s", err.Type.String(), err.Message)
+	return fmt.Sprintf("-ERR [%s]: %s\r\n", err.Type.String(), err.Message)
 }

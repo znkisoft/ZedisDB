@@ -115,19 +115,19 @@ func (s *Server) ListenAndServe(addr string) error {
 		go func() {
 			err := s.handleConnection(conn)
 			if err != nil {
-				if _, ok := err.(*parser.ErrProtocol); ok {
-					io.WriteString(conn, err.Error()+"\r\n")
+				if _, ok := err.(parser.ErrProtocol); ok {
+					io.WriteString(conn, err.Error())
 				} else {
 					io.WriteString(conn, "-ERR unknown error\r\n")
 				}
 			}
+			conn.Close()
 		}()
 	}
 }
 
 func (s *Server) handleConnection(c net.Conn) error {
 	conn := parser.NewRESPConn(c)
-	defer conn.Conn.Close()
 
 	s.mu.RLock()
 	accept := s.accept
