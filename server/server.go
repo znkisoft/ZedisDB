@@ -117,7 +117,7 @@ func (s *Server) ListenAndServe(addr string) error {
 		go func() {
 			err := s.handleConnection(conn)
 			if err != nil {
-				if _, ok := err.(parser.ErrProtocol); ok {
+				if _, ok := err.(parser.Err); ok {
 					io.WriteString(conn, err.Error())
 				} else {
 					io.WriteString(conn, "-ERR unknown error\r\n")
@@ -158,7 +158,7 @@ func (s *Server) handleConnection(c net.Conn) error {
 
 		if h == nil {
 			if err := conn.WriteError(
-				parser.ErrProtocol{Type: parser.Client, Message: "unknown command '" + command + "'"},
+				parser.Err{Type: parser.Client, Message: "unknown command '" + command + "'"},
 			); err != nil {
 				return err
 			}

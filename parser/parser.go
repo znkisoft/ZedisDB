@@ -34,7 +34,7 @@ type Value struct {
 
 const (
 	SimpleString ReplyType = '+'
-	Err          ReplyType = '-'
+	ErrStr       ReplyType = '-'
 	Integer      ReplyType = ':'
 	BulkString   ReplyType = '$'
 	Array        ReplyType = '*'
@@ -59,7 +59,7 @@ func (t ReplyType) String() string {
 
 func (v Value) String() string {
 	switch v.typ {
-	case SimpleString, Err:
+	case SimpleString, ErrStr:
 		return string(v.str)
 	case Integer:
 		return strconv.Itoa(v.integer)
@@ -102,7 +102,7 @@ func IntegerValue(n int) Value {
 
 func (v Value) Bytes() []byte {
 	switch v.typ {
-	case SimpleString, Err, BulkString:
+	case SimpleString, ErrStr, BulkString:
 		return v.str
 	default:
 		return []byte(v.String())
@@ -173,13 +173,13 @@ func MultiBulkValue(commandName string, args ...interface{}) Value {
 
 func (v Value) Error() error {
 	switch v.typ {
-	case Err:
+	case ErrStr:
 		return errors.New(string(v.str))
 	}
 	return nil
 }
 func ErrorValue(err error) Value {
-	return Value{typ: Err, str: []byte(err.Error())}
+	return Value{typ: ErrStr, str: []byte(err.Error())}
 }
 
 func (v Value) Array() []Value {
@@ -272,7 +272,7 @@ func (v Value) MarshalRESP() ([]byte, error) {
 
 func marshalAnyRESP(v Value) ([]byte, error) {
 	switch v.typ {
-	case SimpleString, Err:
+	case SimpleString, ErrStr:
 		return marshalSimpleRESP(v.typ, v.str)
 	case Integer:
 		return marshalSimpleRESP(v.typ, []byte(strconv.Itoa(v.integer)))

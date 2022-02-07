@@ -33,7 +33,7 @@ func (r *RESPReader) readValue() (val Value, n int, err error) {
 	switch typ {
 	case Array:
 		val, rn, err = r.readArrayValue()
-	case SimpleString, Err:
+	case SimpleString, ErrStr:
 		val, rn, err = r.readSimpleValue(typ)
 	case Integer:
 		val, rn, err = r.readIntegerValue()
@@ -52,8 +52,8 @@ func (r *RESPReader) readArrayValue() (Value, int, error) {
 	n := rn
 
 	if err != nil || length > 512*1024*1024 {
-		if _, ok := err.(*ErrProtocol); ok {
-			return NullValue(), n, &ErrProtocol{Type: Protocol, Message: "invalid array length"}
+		if _, ok := err.(*Err); ok {
+			return NullValue(), n, &Err{Type: Protocol, Message: "invalid array length"}
 		}
 		return NullValue(), n, err
 	}
@@ -79,7 +79,7 @@ func (r *RESPReader) readBulkStringValue() (Value, int, error) {
 	if l < 0 {
 		return NullValue(), n, nil
 	} else if l > 512*1024*1024 {
-		return NullValue(), n, &ErrProtocol{Type: Protocol, Message: "invalid bulk string length"}
+		return NullValue(), n, &Err{Type: Protocol, Message: "invalid bulk string length"}
 	} else {
 		buf := make([]byte, l+2)
 		rn, err := io.ReadFull(r.rd, buf)
@@ -89,7 +89,7 @@ func (r *RESPReader) readBulkStringValue() (Value, int, error) {
 		}
 
 		if buf[l] != '\r' || buf[l+1] != '\n' {
-			return NullValue(), n, &ErrProtocol{Type: Protocol, Message: "invalid line ending"}
+			return NullValue(), n, &Err{Type: Protocol, Message: "invalid line ending"}
 		}
 
 		return Value{typ: BulkString, str: buf[:l]}, n, nil

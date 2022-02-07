@@ -13,10 +13,11 @@ type CmdFunc func(con *parser.RESPConn, cmdArgs []parser.Value) error
 type CmdType int
 
 var Router = map[string]CmdFunc{
-	"PING":  DefaultFunc(PingCmdFunc, 1),
-	"ECHO":  DefaultFunc(EchoCmdFunc, 2),
-	"GET":   DefaultFunc(GetCmdFunc, 2),
-	"SET":   DefaultFunc(SetCmdFunc, 3),
-	"SETNX": DefaultFunc(SetNxCmdFunc, 3),
-	"SETEX": DefaultFunc(SetExCmdFunc, 4),
+	"PING":  ArgsCheckFunc(PingCmdFunc, 1),
+	"ECHO":  ArgsCheckFunc(EchoCmdFunc, 2),
+	"GET":   ArgsCheckFunc(GetCmdFunc, 2),
+	"SET":   ArgsCheckFunc(SetCmdFunc, 3),
+	"SETNX": ArgsCheckFunc(SetNxCmdFunc, 3),
+	"SETEX": ArgsCheckFunc(SetExCmdFunc, 4),
+	"LPUSH": LpushCmdFunc,
 }

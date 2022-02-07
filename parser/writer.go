@@ -31,7 +31,7 @@ func (r *RESPWriter) WriteSimpleString(s string) error {
 	return r.WriteValue(SimpleStringValue(s))
 }
 
-func (r *RESPWriter) WriteError(e ErrProtocol) error {
+func (r *RESPWriter) WriteError(e Err) error {
 	errMsg := fmt.Sprintf("[%s]: %s", e.Type.String(), e.Message)
 	_, err := r.R.Write([]byte("-" + errMsg + "\r\n"))
 	return err

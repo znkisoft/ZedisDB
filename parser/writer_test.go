@@ -12,7 +12,7 @@ func TestWriter(t *testing.T) {
 	wr.WriteBytes([]byte("HELLO"))
 	wr.WriteString("HELLO")
 	wr.WriteSimpleString("HELLO")
-	wr.WriteError(ErrProtocol{
+	wr.WriteError(Err{
 		Type:    Internal,
 		Message: "HELLO",
 	})

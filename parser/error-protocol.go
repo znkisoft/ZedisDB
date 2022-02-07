@@ -27,11 +27,11 @@ func (t ErrType) String() string {
 	return ""
 }
 
-type ErrProtocol struct {
+type Err struct {
 	Type    ErrType
 	Message string
 }
 
-func (err ErrProtocol) Error() string {
+func (err Err) Error() string {
 	return fmt.Sprintf("-ERR [%s]: %s\r\n", err.Type.String(), err.Message)
 }
