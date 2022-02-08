@@ -2,22 +2,20 @@ package datastruct
 
 import (
 	"sync"
-
-	"github.com/znkisoft/zedisDB/database/container"
 )
 
 type BaseDict struct {
 	mu   sync.RWMutex
-	data map[string]*container.ZedisObject
+	data map[string]*ZedisObject
 }
 
 func NewDict() *BaseDict {
 	return &BaseDict{
-		data: make(map[string]*container.ZedisObject),
+		data: make(map[string]*ZedisObject),
 	}
 }
 
-func (dict *BaseDict) Get(key string) (*container.ZedisObject, bool) {
+func (dict *BaseDict) Get(key string) (*ZedisObject, bool) {
 	dict.mu.RLock()
 	defer dict.mu.RUnlock()
 	if v, ok := dict.data[key]; ok {
@@ -26,7 +24,7 @@ func (dict *BaseDict) Get(key string) (*container.ZedisObject, bool) {
 	return nil, false
 }
 
-func (dict *BaseDict) Set(key string, value *container.ZedisObject) error {
+func (dict *BaseDict) Set(key string, value *ZedisObject) error {
 	dict.mu.Lock()
 	dict.data[key] = value
 	defer dict.mu.Unlock()
@@ -58,6 +56,6 @@ func (dict *BaseDict) Size() int {
 
 func (dict *BaseDict) Clear() {
 	dict.mu.Lock()
-	dict.data = make(map[string]*container.ZedisObject)
+	dict.data = make(map[string]*ZedisObject)
 	dict.mu.Unlock()
 }

@@ -1,13 +1,9 @@
 package datastruct
 
-import (
-	"github.com/znkisoft/zedisDB/database/container"
-)
-
 type Dictionary interface {
-	Set(key string, value *container.ZedisObject) error
+	Set(key string, value *ZedisObject) error
 	Delete(key string)
-	Get(key string) (*container.ZedisObject, bool)
+	Get(key string) (*ZedisObject, bool)
 	Keys() []string
 	Size() int
 	Clear()

@@ -1,22 +1,32 @@
 package handler
 
 import (
+	"github.com/znkisoft/zedisDB/database/datastruct"
 	"github.com/znkisoft/zedisDB/parser"
 )
 
 func LpushCmdFunc(con *parser.RESPConn, cmdArgs []parser.Value) error {
-	if len(cmdArgs) < 2 {
-		return parser.Err{Type: parser.Client, Message: "wrong number of arguments for 'lpush' command"}
+	// look up key in db
+	_, _, err := resolveCmdArgs(cmdArgs, 2)
+	if err != nil {
+		return err
 	}
+	// if key not found, create new list
 
+	// AMEND: optimize if storages are small  dblist -> ziplist
 	return nil
 }
 
-func LpushxCmdFunc(con *parser.RESPConn, cmdArgs []parser.Value) error {
+func RpushCmdFunc(con *parser.RESPConn, cmdArgs []parser.Value) error {
 	panic("implement me")
 }
 
-func RpushCmdFunc(con *parser.RESPConn, cmdArgs []parser.Value) error {
+func push(subject, value *datastruct.ZedisObject) error {
+	panic("implement me")
+
+}
+
+func LpushxCmdFunc(con *parser.RESPConn, cmdArgs []parser.Value) error {
 	panic("implement me")
 }
 

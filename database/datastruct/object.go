@@ -1,13 +1,13 @@
-package container
+package datastruct
 
 import (
-	"github.com/znkisoft/zedisDB/pkg"
+	"github.com/znkisoft/zedisDB/pkg/lru"
 )
 
-type Type uint8
+type ObjectType uint8
 
 const (
-	StringTyp Type = iota
+	StringTyp ObjectType = iota
 	HashTyp
 	ListTyp
 	SetTyp
@@ -21,17 +21,17 @@ const (
 )
 
 type ZedisObject struct {
-	typ         Type
+	typ         ObjectType
 	encodingTyp EncodingType
 	lru         int64 // unix millisecond
 	ptr         interface{}
 }
 
-func CreateZedisObject(t Type, ptr interface{}) *ZedisObject {
+func CreateZedisObject(t ObjectType, ptr interface{}) *ZedisObject {
 	return &ZedisObject{
 		typ:         t,
 		encodingTyp: RawEncodingTyp,
-		lru:         pkg.GetLRUClock(),
+		lru:         lru.GetLRUClock(),
 		ptr:         ptr,
 	}
 }
@@ -48,10 +48,10 @@ func (o *ZedisObject) Ptr() interface{} {
 	return o.ptr
 }
 
-func (o *ZedisObject) Typ() Type {
+func (o *ZedisObject) Typ() ObjectType {
 	return o.typ
 }
 
 func (o *ZedisObject) ObjectIdleTime() int64 {
-	return pkg.GetLRUClock() - o.lru
+	return lru.GetLRUClock() - o.lru
 }

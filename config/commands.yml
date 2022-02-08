@@ -17,7 +17,5 @@ server
 set
 sorted_set
 transactions
-#stream
-#bitmap
-#cluster
-#hyperloglog
+bitmap
+hyperloglog

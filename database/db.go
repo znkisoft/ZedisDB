@@ -1,7 +1,6 @@
 package database
 
 import (
-	"github.com/znkisoft/zedisDB/database/container"
 	"github.com/znkisoft/zedisDB/database/datastruct"
 )
 
@@ -18,11 +17,11 @@ func NewDb() *Db {
 	}
 }
 
-func (db *Db) Set(key string, value *container.ZedisObject) error {
+func (db *Db) Set(key string, value *datastruct.ZedisObject) error {
 	return db.dict.Set(key, value)
 }
 
-func (db *Db) Get(key string) (*container.ZedisObject, bool) {
+func (db *Db) Get(key string) (*datastruct.ZedisObject, bool) {
 	return db.dict.Get(key)
 }
 

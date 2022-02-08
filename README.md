@@ -20,7 +20,7 @@
 
 ### support commands
 
-[commands](./docs/commands.yml)
+[commands](config/commands.yml)
 
 ## reference
 

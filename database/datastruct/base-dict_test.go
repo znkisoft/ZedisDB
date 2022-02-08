@@ -3,13 +3,11 @@ package datastruct
 import (
 	"reflect"
 	"testing"
-
-	"github.com/znkisoft/zedisDB/database/container"
 )
 
 func TestDict(t *testing.T) {
 	dict := NewDict()
-	o := container.CreateZedisObject(container.StringTyp, "value")
+	o := CreateZedisObject(StringTyp, "value")
 
 	t.Run("TestGetNull", func(t *testing.T) {
 		if v, _ := dict.Get("test"); v != nil {
@@ -43,7 +41,7 @@ func TestDict(t *testing.T) {
 }
 
 func BenchmarkKV(b *testing.B) {
-	o := container.CreateZedisObject(container.StringTyp, "value")
+	o := CreateZedisObject(StringTyp, "value")
 	// goos: darwin
 	// goarch: arm64
 	// pkg: github.com/znkisoft/zedisDB/database/datastruct

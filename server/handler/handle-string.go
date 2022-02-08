@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/znkisoft/zedisDB/database/container"
+	"github.com/znkisoft/zedisDB/database/datastruct"
 
 	"github.com/znkisoft/zedisDB/parser"
 	"github.com/znkisoft/zedisDB/pkg/logger"
@@ -32,7 +32,7 @@ todo: nx xx ex px
 func SetCmdFunc(con *parser.RESPConn, cmdArgs []parser.Value) error {
 	key := cmdArgs[1].String()
 	value := cmdArgs[2]
-	o := container.CreateZedisObject(container.StringTyp, value.String())
+	o := datastruct.CreateZedisObject(datastruct.StringTyp, value.String())
 	err := db.Set(key, o)
 	logger.CommonLog.Printf("[SET]key: %s, value: %s", key, value)
 	if err != nil {
@@ -46,7 +46,7 @@ func SetNxCmdFunc(con *parser.RESPConn, cmdArgs []parser.Value) error {
 	if _, found := db.Get(key); found {
 		return con.WriteInteger(0)
 	}
-	o := container.CreateZedisObject(container.StringTyp, cmdArgs[2].String())
+	o := datastruct.CreateZedisObject(datastruct.StringTyp, cmdArgs[2].String())
 	err := db.Set(key, o)
 	logger.CommonLog.Printf("[SETNX]key: %s, value: %s", key, cmdArgs[2])
 	if err != nil {
