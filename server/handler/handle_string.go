@@ -18,6 +18,7 @@ func EchoCmdFunc(con *parser.RESPConn, cmdArgs []parser.Value) error {
 func GetCmdFunc(con *parser.RESPConn, cmdArgs []parser.Value) error {
 	key := cmdArgs[1].String()
 	val, ok := db.Get(key)
+
 	logger.CommonLog.Printf("[GET](%t): %s", ok, key)
 	if !ok {
 		return con.WriteNull()
@@ -25,15 +26,14 @@ func GetCmdFunc(con *parser.RESPConn, cmdArgs []parser.Value) error {
 	return con.WriteValue(parser.AnyValue(val.Ptr()))
 }
 
-/*SetCmdFunc
-pattern: SET key value [NX] [XX] [EX <seconds>] [PX <milliseconds>]
-todo: nx xx ex px
-*/
+// SetCmdFunc pattern: SET key value [NX] [XX] [EX <seconds>] [PX <milliseconds>]
 func SetCmdFunc(con *parser.RESPConn, cmdArgs []parser.Value) error {
 	key := cmdArgs[1].String()
 	value := cmdArgs[2]
+
 	o := datastruct.CreateZedisObject(datastruct.StringTyp, value.String())
 	err := db.Set(key, o)
+
 	logger.CommonLog.Printf("[SET]key: %s, value: %s", key, value)
 	if err != nil {
 		return parser.Err{Type: parser.Internal, Message: err.Error()}
