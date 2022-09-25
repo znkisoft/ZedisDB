@@ -1,7 +1,7 @@
 package container
 
 import (
-	"github.com/znkisoft/zedisDB/database/datastruct"
+	"container/list"
 )
 
 // lpush key value1 [value2] 将一个或多个值插入到列表头部
@@ -18,6 +18,26 @@ import (
 // lrange 获取列表指定范围内的元素
 // LINSERT key BEFORE|AFTER pivot value 在列表的元素前或者后插入元素
 
+// List
+//
+// # Redis prototypes reference:
+// ```c
+// list *listCreate(void);
+// void listRelease(list *list);
+// list *listAddNodeHead(list *list, void *value);
+// list *listAddNodeTail(list *list, void *value);
+// list *listInsertNode(list *list, listNode *old_node, void *value, int after);
+// void listDelNode(list *list, listNode *node);
+// listIter *listGetIterator(list *list, int direction);
+// listNode *listNext(listIter *iter);
+// void listReleaseIterator(listIter *iter);
+// list *listDup(list *orig);
+// listNode *listSearchKey(list *list, void *key);
+// listNode *listIndex(list *list, long index);
+// void listRewind(list *list, listIter *li);
+// void listRewindTail(list *list, listIter *li);
+// void listRotate(list *list);
+// ```
 type List struct {
 	/*
 		AMEND: ziplist and dblinkedlist
@@ -25,7 +45,7 @@ type List struct {
 		- - when list length is greater than 512
 		- - when list size is greater than 64bytes
 	*/
-	data datastruct.List
+	li *list.List // TODO add ziplist implementation
 }
 
 type direction int
@@ -34,3 +54,25 @@ const (
 	Head direction = iota
 	Tail
 )
+
+func NewList() *List {
+	return &List{
+		list.New(),
+	}
+}
+
+// void listRelease(list *list);
+// list *listAddNodeHead(list *list, void *value);
+// list *listAddNodeTail(list *list, void *value);
+// list *listInsertNode(list *list, listNode *old_node, void *value, int after);
+// void listDelNode(list *list, listNode *node);
+// listNode *listNext(listIter *iter);
+// listNode *listSearchKey(list *list, void *key);
+// listNode *listIndex(list *list, long index);
+// void listRotate(list *list);
+
+// listIter *listGetIterator(list *list, int direction);
+// void listReleaseIterator(listIter *iter);
+// list *listDup(list *orig);
+// void listRewind(list *list, listIter *li);
+// void listRewindTail(list *list, listIter *li);
