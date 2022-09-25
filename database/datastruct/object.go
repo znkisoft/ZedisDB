@@ -1,7 +1,7 @@
 package datastruct
 
 import (
-	"github.com/znkisoft/zedisDB/pkg/lru"
+	"github.com/znkisoft/zedisDB/lru"
 )
 
 type ObjectType uint8

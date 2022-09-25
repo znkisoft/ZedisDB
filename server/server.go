@@ -2,15 +2,14 @@ package server
 
 import (
 	"io"
+	"net"
 	"strings"
 	"sync"
 
+	"github.com/znkisoft/zedisDB/logger"
 	"github.com/znkisoft/zedisDB/server/handler"
 
 	"github.com/znkisoft/zedisDB/parser"
-	"github.com/znkisoft/zedisDB/pkg/logger"
-
-	"net"
 )
 
 type Server struct {

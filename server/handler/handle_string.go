@@ -2,9 +2,9 @@ package handler
 
 import (
 	"github.com/znkisoft/zedisDB/database/datastruct"
+	"github.com/znkisoft/zedisDB/logger"
 
 	"github.com/znkisoft/zedisDB/parser"
-	"github.com/znkisoft/zedisDB/pkg/logger"
 )
 
 func PingCmdFunc(con *parser.RESPConn, cmdArgs []parser.Value) error {

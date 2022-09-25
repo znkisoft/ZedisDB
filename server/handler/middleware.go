@@ -3,8 +3,8 @@ package handler
 import (
 	"strconv"
 
+	"github.com/znkisoft/zedisDB/logger"
 	"github.com/znkisoft/zedisDB/parser"
-	"github.com/znkisoft/zedisDB/pkg/logger"
 )
 
 func ArgsCheckFunc(fn CmdFunc, argLimit int) CmdFunc {
